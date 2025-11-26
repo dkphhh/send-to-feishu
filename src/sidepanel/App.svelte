@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Credentials from '@/components/settings/Credentials.svelte';
+	import Credentials from '@/components/settings/CredentialsSetting.svelte';
 </script>
 
 <Credentials />

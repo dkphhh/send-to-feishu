@@ -7,14 +7,19 @@
 	async function handleSave() {
 		try {
 			if (!feishuAppId || !feishuAppSecret || !feishuBaseUrl) {
-				alert('请填写完整的 App ID 、 App Secret 和基础链接');
-				return;
+				throw new Error('请填写完整的 App ID 、 App Secret 和基础链接');
 			}
 			await credentials.set(feishuAppId, feishuAppSecret, feishuBaseUrl);
+			const token = await credentials.tokenManager?.getToken();
+
+			if (!token) {
+				throw new Error('无法获取访问令牌，请检查凭证是否正确');
+			}
+
+			alert('保存成功，凭证有效');
 			// TODO:跳转到上一级页面
 		} catch (e) {
 			alert('保存失败：' + (e as Error).message);
-			return;
 		}
 	}
 </script>
@@ -59,7 +64,6 @@
 			placeholder="https://example.feishu.cn/"
 			bind:value={feishuBaseUrl}
 		/>
-
-		<button onclick={handleSave} class="btn mt-4 btn-neutral">保存</button>
+		<button onclick={handleSave} class="btn mt-4 btn-neutral">保存并测试</button>
 	</fieldset>
 </div>

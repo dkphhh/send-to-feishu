@@ -1,3 +1,4 @@
+import { createFeishuTokenManager, FeishuToken } from '@/lib/feishu/feishu-token-manager';
 class Credentials {
 	/**
 	 * 飞书应用的 App ID。
@@ -12,11 +13,11 @@ class Credentials {
 	 */
 	feishuBaseUrl: string = $state('');
 
-	constructor() {
-		this.get();
-	}
+	tokenManager: FeishuToken | undefined = undefined;
 
 	async set(feishuAppId: string, feishuAppSecret: string, feishuBaseUrl: string) {
+		const tokenManager = createFeishuTokenManager(feishuAppId, feishuAppSecret, feishuBaseUrl);
+		this.tokenManager = tokenManager;
 		this.feishuAppId = feishuAppId;
 		this.feishuAppSecret = feishuAppSecret;
 		this.feishuBaseUrl = feishuBaseUrl;
@@ -37,9 +38,30 @@ class Credentials {
 		this.feishuAppSecret = (result.feishuAppSecret as string) || '';
 		this.feishuBaseUrl = (result.feishuBaseUrl as string) || '';
 	}
+
+	async init() {
+		await this.get();
+		if (!this.feishuAppId || !this.feishuAppSecret || !this.feishuBaseUrl) {
+			// TODO：跳转到设置页面
+			return;
+		}
+		try {
+			this.tokenManager = createFeishuTokenManager(
+				this.feishuAppId,
+				this.feishuAppSecret,
+				this.feishuBaseUrl
+			);
+		} catch (error) {
+			alert(`初始化飞书应用凭据失败，${(error as Error).message}`);
+		}
+	}
 }
 
-export const credentials = new Credentials();
+export const credentials = await (async () => {
+	const cred = new Credentials();
+	await cred.init();
+	return cred;
+})();
 
 class FormsManager {
 	static async init(): Promise<Forms> {
@@ -104,9 +126,11 @@ export class SheetForm {
 	async save() {
 		const name = this.name?.trim();
 		if (!name) throw new Error('配置名称不能为空');
+		if (!this.sheetToken) throw new Error('sheetToken 不能为空');
+		if (!this.sheetId) throw new Error('sheetId 不能为空');
 
 		// 构造要保存的数据对象
-		const formData = {
+		const formData: SheetFormType = {
 			id: this.id,
 			name: name,
 			formType: this.formType,
@@ -187,9 +211,11 @@ export class BitableForm {
 	async save() {
 		const name = this.name?.trim();
 		if (!name) throw new Error('配置名称不能为空');
+		if (!this.appToken) throw new Error('appToken 不能为空');
+		if (!this.tableId) throw new Error('tableId 不能为空');
 
 		// 构造要保存的数据对象
-		const formData = {
+		const formData: BitableFormType = {
 			id: this.id,
 			name: name,
 			formType: this.formType,
@@ -263,7 +289,7 @@ export class DocForm {
 		if (!this.folderToken) throw new Error('folderToken 不能为空');
 
 		// 构造要保存的数据对象
-		const formData = {
+		const formData: DocFrommType = {
 			id: this.id,
 			name: name,
 			formType: this.formType,
@@ -285,7 +311,8 @@ export class DocForm {
 		await chrome.storage.local.set({ forms: $state.snapshot(allForms) });
 	}
 
-	async set(folderToken: string) {
+	async set(name: string, folderToken: string) {
+		this.name = name;
 		this.folderToken = folderToken;
 		await this.save();
 	}
