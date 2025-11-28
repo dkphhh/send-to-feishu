@@ -64,7 +64,7 @@ export class FeishuDocManager {
 	 * @param content 文档内容
 	 * TODO：需要根据内容格式，支持更多的内容块类型，参考文档：https://open.feishu.cn/document/server-docs/docs/docs/docx-v1/document-block/create
 	 */
-	async writeDocContent(payload: DocPayload): Promise<void> {
+	async writeDocContent(payload: DocPayload): Promise<string> {
 		const { title, content } = payload;
 
 		const blocks = content.split('\n\n');
@@ -120,5 +120,6 @@ export class FeishuDocManager {
 				throw new Error(`飞书写入文档接口报错：索引 ${i}，报错：${resData.msg}`);
 			}
 		}
+		return documentId;
 	}
 }

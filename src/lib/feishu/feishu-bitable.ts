@@ -1,10 +1,12 @@
 // API 参考文档 https://open.feishu.cn/document/server-docs/docs/bitable-v1/app-table-record/create?appId=cli_a7a5d48eeab81013
 import { FeishuToken } from './feishu-token-manager';
 
-export type BitablePayload = Record<
-	'fields',
-	Record<string, string | Record<string, unknown> | Array<Record<string, string>>>
->;
+export type BitablePayload =
+	| string
+	| {
+			text: string;
+			link: string;
+	  };
 
 export class FeishuBitableManager {
 	constructor(
@@ -19,7 +21,11 @@ export class FeishuBitableManager {
 		/**
 		 * 多维表格的数据表的 ID。
 		 */
-		private tableId: string
+		private tableId: string,
+		/**
+		 * 保存链接的字段
+		 */
+		private field: string
 	) {}
 
 	/**
@@ -32,7 +38,11 @@ export class FeishuBitableManager {
 			Authorization: `Bearer ${await this.tokenManager.getToken()}`,
 			'Content-Type': 'application/json; charset=utf-8'
 		};
-		const body = JSON.stringify(payload);
+		const body = JSON.stringify({
+			fields: {
+				[this.field]: payload
+			}
+		});
 
 		const res = await fetch(url, {
 			method: 'POST',

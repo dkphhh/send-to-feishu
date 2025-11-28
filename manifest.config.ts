@@ -13,14 +13,15 @@ export default defineManifest({
 			48: 'public/logo.png'
 		}
 	},
+	host_permissions: ['https://open.feishu.cn/*'],
 	background: {
 		service_worker: 'src/background/main.ts',
 		type: 'module'
 	},
 	content_scripts: [
 		{
-			js: ['src/content/main.ts'],
-			matches: ['https://*/*']
+			js: ['src/content/index.ts'],
+			matches: ['http://*/*', 'https://*/*']
 		}
 	],
 	permissions: ['sidePanel', 'storage', 'contentSettings'],

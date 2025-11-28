@@ -1,4 +1,13 @@
 @import 'tailwindcss';
-@plugin "daisyui" {
+@plugin 'daisyui' {
 	themes: light --default;
+}
+
+.glass {
+	--glass-blur: 20px;
+	--glass-opacity: 5%;
+	--glass-reflect-opacity: 0%;
+	--glass-reflect-degree: 0deg;
+	--glass-border-opacity: 100%;
+	--glass-text-shadow-opacity: 5%;
 }

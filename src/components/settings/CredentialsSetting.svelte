@@ -9,6 +9,11 @@
 			if (!feishuAppId || !feishuAppSecret || !feishuBaseUrl) {
 				throw new Error('请填写完整的 App ID、App Secret 和基础链接');
 			}
+
+			if (!feishuBaseUrl.endsWith('/')) {
+				feishuBaseUrl += '/';
+			}
+
 			await credentials.set(feishuAppId, feishuAppSecret, feishuBaseUrl);
 			const token = await credentials.tokenManager?.getToken();
 
@@ -55,7 +60,7 @@
 		/>
 
 		<!-- 基础链接 -->
-		<label for="feishuBaseUrl" class="label">基础链接 </label>
+		<label for="feishuBaseUrl" class="label">基础链接，例如：https://example.feishu.cn/ </label>
 		<input
 			id="feishuBaseUrl"
 			type="text"

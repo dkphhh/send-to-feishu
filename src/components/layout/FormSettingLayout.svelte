@@ -64,24 +64,12 @@
 			>
 		</p>
 
-		<!-- 配置名称 -->
-		<label for="name" class="label">配置名称</label>
-		<input
-			required
-			id="name"
-			type="text"
-			class="input"
-			placeholder="配置名称"
-			bind:value={form.name}
-		/>
-
 		{@render children()}
 
 		<button disabled={!isComplete} onclick={handleSave} class="btn mt-4 btn-neutral"
 			>{isCreateMode ? '新建配置' : '保存配置'}</button
 		>
 		{#if !isCreateMode}
-			<div class="divider"></div>
 			<button onclick={handleDelete} class="btn mt-4 btn-error">删除配置</button>
 		{/if}
 	</fieldset>

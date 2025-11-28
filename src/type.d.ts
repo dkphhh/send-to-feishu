@@ -64,9 +64,13 @@ declare global {
 		 * 多维表格的数据表的 ID。
 		 */
 		tableId: string;
+		/**
+		 * 保存链接的字段
+		 */
+		field: string;
 	};
 
-	type DocFrommType = {
+	type DocFromType = {
 		/**
 		 *  配置 id
 		 */
@@ -85,17 +89,27 @@ declare global {
 		folderToken: string;
 	};
 
-	type FormType = SheetFormType | BitableFormType | DocFrommType;
+	type UnionFormType = {
+		/**
+		 *  配置 id
+		 */
+		id: string;
+		/**
+		 *  配置名称
+		 */
+		name: string;
+		formType: '联动配置';
+		linkForm: SheetFormType | BitableFormType;
+		docForm: DocFromType;
+	};
+
+	type FormType = SheetFormType | BitableFormType | DocFromType | UnionFormType;
 
 	type Forms = FormType[];
 
-	type FormTypeName = 'sheet' | 'bitable' | 'doc';
+	type FormTypeName = FormType['formType'];
 	type EditMode = 'create' | 'edit';
-	type PageType =
-		| 'index'
-		| 'settings'
-		| 'formList'
-		| 'formEdit'
+	type PageType = 'index' | 'settings' | 'formList' | 'formEdit';
 }
 
 export {};

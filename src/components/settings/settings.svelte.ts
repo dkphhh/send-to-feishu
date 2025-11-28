@@ -9,7 +9,7 @@ class Credentials {
 	 */
 	feishuAppSecret: string = $state('');
 	/**
-	 * 飞书应用的基础链接。
+	 * 飞书应用的基础链接，例如：https://example.feishu.cn/。
 	 */
 	feishuBaseUrl: string = $state('');
 

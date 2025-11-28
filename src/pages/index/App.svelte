@@ -1,7 +1,12 @@
 <script lang="ts">
 	import Layout from '@/components/layout/Layout.svelte';
+	import FormList from '@/components/forms/FormList.svelte';
+	import CreateFormButton from '@/components/forms/CreateFormButton.svelte';
 </script>
 
 <Layout>
-	<h1 class="text-center text-2xl font-bold">Welcome to Send To Feishu!</h1>
+	<div class="flex flex-col items-center gap-4">
+		<FormList />
+		<CreateFormButton />
+	</div>
 </Layout>
