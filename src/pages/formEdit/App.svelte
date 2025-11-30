@@ -10,44 +10,54 @@
 	const formType = searchParams.get('type') as FormTypeName;
 	const formId = searchParams.get('formId');
 	let form = $derived(formId ? getForm(formId) : null);
-	let createForm: FormType = $derived.by(() => {
-		if (formType === '飞书表格') {
-			return {
-				formType: '飞书表格',
-				id: crypto.randomUUID(),
-				name: '',
-				rangeIndex: {
-					endIndex: '',
-					startIndex: ''
-				},
-				sheetId: '',
-				sheetToken: ''
-			};
-		}
+	let createForm: FormType = $state(
+		(() => {
+			if (formType === '飞书表格') {
+				return {
+					formType: '飞书表格',
+					fields: ['title', 'url'],
+					id: crypto.randomUUID(),
+					name: '',
+					rangeIndex: {
+						endIndex: '',
+						startIndex: ''
+					},
+					sheetId: '',
+					sheetToken: ''
+				};
+			}
 
-		if (formType === '多维表格') {
-			return {
-				formType: '多维表格',
-				id: crypto.randomUUID(),
-				name: '',
-				appToken: '',
-				tableId: '',
-				field: ''
-			};
-		}
+			if (formType === '多维表格') {
+				return {
+					formType: '多维表格',
+					id: crypto.randomUUID(),
+					name: '',
+					appToken: '',
+					tableId: '',
+					fieldsMap: {
+						title: undefined,
+						author: undefined,
+						description: undefined,
+						published: undefined,
+						source: undefined,
+						url: undefined
+					}
+				};
+			}
 
-		if (formType === '飞书文档') {
-			return {
-				formType: '飞书文档',
-				id: crypto.randomUUID(),
-				name: '',
-				folderToken: ''
-			};
-		}
+			if (formType === '飞书文档') {
+				return {
+					formType: '飞书文档',
+					id: crypto.randomUUID(),
+					name: '',
+					folderToken: ''
+				};
+			}
 
-		alert('未知的表单类型');
-		throw new Error('未知的表单类型');
-	});
+			alert('未知的表单类型');
+			throw new Error('未知的表单类型');
+		})()
+	);
 </script>
 
 <Layout>

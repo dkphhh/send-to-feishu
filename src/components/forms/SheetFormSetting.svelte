@@ -22,57 +22,66 @@
 	</p>
 
 	<!-- 配置名称 -->
-	<label for="name" class="label">配置名称</label>
-	<input
-		required
-		id="name"
-		type="text"
-		class="input"
-		placeholder="配置名称"
-		bind:value={form.name}
-	/>
+	<div>
+		<label for="name" class="label">配置名称</label>
+		<input
+			required
+			id="name"
+			type="text"
+			class="input"
+			placeholder="配置名称"
+			bind:value={form.name}
+		/>
+	</div>
 
 	<!-- Sheet Token -->
-	<label for="sheetToken" class="label">Sheet Token</label>
-	<input
-		required
-		id="sheetToken"
-		type="text"
-		class="input"
-		placeholder="Sheet Token"
-		bind:value={form.sheetToken}
-	/>
+	<div>
+		<label for="sheetToken" class="label">Sheet Token</label>
+		<input
+			required
+			id="sheetToken"
+			type="text"
+			class="input"
+			placeholder="Sheet Token"
+			bind:value={form.sheetToken}
+		/>
+	</div>
 
 	<!-- Sheet ID -->
-	<label for="sheetId" class="label">Sheet ID</label>
-	<input
-		required
-		id="sheetId"
-		type="text"
-		class="input"
-		placeholder="Sheet ID"
-		bind:value={form.sheetId}
-	/>
+	<div>
+		<label for="sheetId" class="label">Sheet ID</label>
+		<input
+			required
+			id="sheetId"
+			type="text"
+			class="input"
+			placeholder="Sheet ID"
+			bind:value={form.sheetId}
+		/>
+	</div>
 
 	<!-- 开始位置 -->
-	<label for="startIndex" class="label">开始位置：链接所在的表格列，例如 C 列，就填 C</label>
-	<input
-		id="startIndex"
-		type="text"
-		class="input"
-		placeholder="开始位置"
-		bind:value={form.rangeIndex.startIndex}
-		oninput={() => (form.rangeIndex.startIndex = form.rangeIndex.startIndex.toUpperCase())}
-	/>
-
+	<div>
+		<label for="startIndex" class="label">开始位置：链接所在的表格列，例如 C 列，就填 C</label>
+		<input
+			id="startIndex"
+			type="text"
+			class="input"
+			placeholder="开始位置"
+			bind:value={form.rangeIndex.startIndex}
+			oninput={() => (form.rangeIndex.startIndex = form.rangeIndex.startIndex.toUpperCase())}
+		/>
+	</div>
 	<!-- 结束位置 -->
-	<label for="endIndex" class="label">结束位置：开始位置的后一列，例如 D 列，就填 D</label>
-	<input
-		id="endIndex"
-		type="text"
-		class="input"
-		placeholder="结束位置"
-		bind:value={form.rangeIndex.endIndex}
-		oninput={() => (form.rangeIndex.endIndex = form.rangeIndex.endIndex.toUpperCase())}
-	/>
+	<div>
+		<label for="endIndex" class="label">结束位置：开始位置的后一列，例如 D 列，就填 D</label>
+		<input
+			id="endIndex"
+			type="text"
+			class="input"
+			placeholder="结束位置"
+			bind:value={form.rangeIndex.endIndex}
+			oninput={() => (form.rangeIndex.endIndex = form.rangeIndex.endIndex.toUpperCase())}
+		/>
+	</div>
 </FormSettingLayout>

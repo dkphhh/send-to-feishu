@@ -53,8 +53,7 @@ async function sendToFeishuBitable(formId: string, payload: BitablePayload) {
 	const bitableManager = new FeishuBitableManager(
 		credentials.tokenManager,
 		form.appToken,
-		form.tableId,
-		form.field
+		form.tableId
 	);
 
 	await bitableManager.createRecord(payload);
@@ -112,7 +111,21 @@ export async function sendToFeishu(formId: string): Promise<string> {
 		throw new Error('表单配置未找到');
 	}
 
-	const { html, url } = await getCurrentTabContent();
+	let html, url;
+	try {
+		const content = await getCurrentTabContent();
+		html = content.html;
+		url = content.url;
+	} catch (error) {
+		const errorMessage = error instanceof Error ? error.message : String(error);
+		if (
+			errorMessage.includes('Receiving end does not exist') ||
+			errorMessage.includes('Could not establish connection')
+		) {
+			throw new Error('无法连接到当前页面，请刷新页面后重试，或检查当前页面是否支持该扩展。');
+		}
+		throw error;
+	}
 
 	const articleData = await extractWebArticle(html, url);
 
@@ -120,17 +133,19 @@ export async function sendToFeishu(formId: string): Promise<string> {
 		case '飞书表格': {
 			const payload: SheetPayload = [
 				[
+					articleData.title,
 					{
-						text: articleData.title,
+						text: articleData.url,
 						link: url,
 						type: 'url'
 					}
 				]
 			];
+			console.log('Sheet payload:', payload);
 			return await sendToFeishuSheet(formId, payload);
 		}
 		case '多维表格': {
-			const payload: BitablePayload = { text: articleData.title, link: url };
+			const payload: BitablePayload = FeishuBitableManager.getPayload(form.fieldsMap, articleData);
 			return await sendToFeishuBitable(formId, payload);
 		}
 		case '飞书文档': {
@@ -162,14 +177,22 @@ export async function sendToFeishu(formId: string): Promise<string> {
 
 			switch (linkForm.formType) {
 				case '多维表格': {
-					const payload: BitablePayload = { text: articleData.title, link: docUrl };
+				
+					// 将文章中的 URL 字段替换为文档链接
+					const modifiedArticleData = { ...articleData, url: docUrl };
+					const payload: BitablePayload = FeishuBitableManager.getPayload(
+						linkForm.fieldsMap,
+						modifiedArticleData
+					);
+
 					return await sendToFeishuBitable(linkForm.id, payload);
 				}
 				case '飞书表格': {
 					const payload: SheetPayload = [
 						[
+							articleData.title,
 							{
-								text: articleData.title,
+								text: articleData.url,
 								link: docUrl,
 								type: 'url'
 							}

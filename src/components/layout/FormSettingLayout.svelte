@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { setForm, deleteForm } from '@/components/forms/forms.svelte';
-
+	import { gotoPage } from '@/lib/utils';
 	let {
 		form,
 		isComplete,
@@ -14,20 +14,19 @@
 		children: Snippet;
 	} = $props();
 
-	let isCreateMode = $derived(!form.name || form.name.trim() === '');
+	let isCreateMode = !form.name || form.name.trim() === '';
 
 	async function handleSave() {
 		if (!isComplete) {
 			alert('请填写完整的配置信息');
-			return;
 		}
 		try {
 			await setForm(form);
 			alert('保存成功');
-			return;
+			gotoPage('formList');
 		} catch (error) {
 			alert('保存失败：' + (error instanceof Error ? error.message : '未知错误'));
-			return;
+			gotoPage('formList');
 		}
 	}
 
@@ -40,9 +39,11 @@
 		try {
 			await deleteForm(form);
 			alert('删除成功');
+			gotoPage('formList');
 		} catch (error) {
 			console.error(error);
 			alert('删除失败：' + (error instanceof Error ? error.message : '未知错误'));
+			gotoPage('formList');
 		}
 	}
 </script>

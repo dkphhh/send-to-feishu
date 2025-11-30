@@ -14,6 +14,60 @@ declare global {
 		data: T;
 	};
 
+	/**
+	 * 抓取网页文章的类型
+	 *
+	 */
+	interface FetchedArticle {
+		/**
+		 * 文章的标题
+		 *
+		 * @type {string}
+		 */
+		title: string;
+
+		/**
+		 * 文章作者
+		 *
+		 * @type {string}
+		 */
+		author: string;
+
+		/**
+		 * 文章描述
+		 *
+		 * @type {string}
+		 */
+		description: string;
+		/**
+		 * 文章的发布时间
+		 *
+		 * @type {string}
+		 */
+		published: string;
+
+		/**
+		 * 文章的来源
+		 *
+		 * @type {string}
+		 */
+		source: string;
+		/**
+		 * 文章链接
+		 *
+		 * @type {string}
+		 */
+		url: string;
+
+		/**
+		 * 文章的内容，markdown 格式
+		 *
+		 * @type {string}
+		 */
+		content: string;
+	}
+	type FetchedArticleFields = Exclude<keyof FetchedArticle, 'content'>;
+
 	type SheetRangeIndex = { startIndex: string; endIndex: string };
 
 	type SheetFormType = {
@@ -41,6 +95,10 @@ declare global {
 		 * 电子表格工作表的范围索引。
 		 */
 		rangeIndex: SheetRangeIndex;
+		/**
+		 * 包含的字段
+		 */
+		fields: FetchedArticleFields[];
 	};
 
 	type BitableFormType = {
@@ -65,9 +123,11 @@ declare global {
 		 */
 		tableId: string;
 		/**
-		 * 保存链接的字段
+		 * 包含的字段映射关系
+		 * key: 抓取的文章字段
+		 * value: 飞书多维表格的字段
 		 */
-		field: string;
+		fieldsMap: Record<FetchedArticleFields, string|undefined>;
 	};
 
 	type DocFromType = {

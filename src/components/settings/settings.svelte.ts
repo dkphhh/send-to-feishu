@@ -1,4 +1,5 @@
 import { createFeishuTokenManager, FeishuToken } from '@/lib/feishu/feishu-token-manager';
+import { FeishuConfigError } from '@/lib/feishu/feishu-token-manager';
 class Credentials {
 	/**
 	 * 飞书应用的 App ID。
@@ -41,8 +42,8 @@ class Credentials {
 
 	async init() {
 		await this.get();
+		// 如果没有获取到配置，不强制跳转，而是由 UI 层决定如何展示
 		if (!this.feishuAppId || !this.feishuAppSecret || !this.feishuBaseUrl) {
-			// TODO：跳转到设置页面
 			return;
 		}
 		try {
@@ -52,8 +53,13 @@ class Credentials {
 				this.feishuBaseUrl
 			);
 		} catch (error) {
-			alert(`初始化飞书应用凭据失败，${(error as Error).message}`);
+			throw new FeishuConfigError(`初始化飞书应用凭据失败，${(error as Error).message}`);
 		}
+	}
+
+	// 检查凭据是否完整
+	get isValid() {
+		return !!(this.feishuAppId && this.feishuAppSecret && this.feishuBaseUrl);
 	}
 }
 

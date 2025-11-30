@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { getPagePath } from '@/lib/utils';
-	import { FORM_ICONS } from '../const';
+	import { FORM_ICONS } from '@/lib/const';
 </script>
 
 {#snippet createNewForm(type: FormTypeName)}

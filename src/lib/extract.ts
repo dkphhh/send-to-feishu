@@ -2,59 +2,6 @@ import { extractFromHtml } from '@extractus/article-extractor';
 import YAML from 'yaml';
 import TurndownService from 'turndown';
 
-/**
- * 抓取网页文章的类型
- *
- */
-interface FetchedArticle {
-	/**
-	 * 文章的标题
-	 *
-	 * @type {string}
-	 */
-	title: string;
-
-	/**
-	 * 文章作者
-	 *
-	 * @type {string}
-	 */
-	author: string;
-
-	/**
-	 * 文章描述
-	 *
-	 * @type {string}
-	 */
-	description: string;
-	/**
-	 * 文章的发布时间
-	 *
-	 * @type {string}
-	 */
-	published: string;
-
-
-	/**
-	 * 文章的来源
-	 *
-	 * @type {string}
-	 */
-	source: string;
-	/**
-	 * 文章链接
-	 *
-	 * @type {string}
-	 */
-	url: string;
-
-	/**
-	 * 文章的内容，markdown 格式
-	 *
-	 * @type {string}
-	 */
-	content: string;
-}
 
 /**
  * 一个将 html 转化为 markdown 的 constructor 实例

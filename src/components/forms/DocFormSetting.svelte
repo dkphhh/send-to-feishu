@@ -38,6 +38,7 @@
 		placeholder="配置名称"
 		bind:value={form.name}
 	/>
+
 	<!-- Folder Token -->
 	<label for="folderToken" class="label">Folder Token</label>
 	<input

@@ -1,5 +1,12 @@
 import { differenceInSeconds } from 'date-fns';
 
+export class FeishuConfigError extends Error {
+	constructor(message: string) {
+		super(message);
+		this.name = 'FeishuConfigError';
+	}
+}
+
 /**
  * 飞书返回的 token 数据结构
  *
@@ -153,6 +160,10 @@ export class FeishuToken extends BaseToken {
 }
 
 export function createFeishuTokenManager(appId: string, appSecret: string, baseUrl: string) {
+	if (!appId || !appSecret) {
+		throw new FeishuConfigError('请先在设置页配置飞书 App ID 和 App Secret');
+	}
+
 	const FEISHU_TENANT_URL = 'https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal';
 
 	const feishuInit = {

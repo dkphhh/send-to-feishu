@@ -30,4 +30,13 @@ export default defineConfig({
       origin: [/chrome-extension:\/\//],
     },
   },
+  build: {
+    rollupOptions: {
+      input: {
+        formEdit: "src/pages/formEdit/index.html",
+        formList: "src/pages/formList/index.html",
+        settings: "src/pages/settings/index.html",
+      },
+    },
+  },
 });

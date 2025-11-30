@@ -1,6 +1,6 @@
 <script lang="ts">
-	import FormList from '@/components/forms/FormList.svelte';
-	import CreateFormButton from '@/components/forms/CreateFormButton.svelte';
+	import FormList from '@/components/forms/edit/EditFormList.svelte';
+	import CreateFormButton from '@/components/forms/create/CreateFormButton.svelte';
 	import Layout from '@/components/layout/Layout.svelte';
 </script>
 

@@ -1,6 +1,7 @@
 // API 参考文档 https://open.feishu.cn/document/server-docs/docs/sheets-v3/data-operation/append-data
 import { FeishuToken } from './feishu-token-manager';
 export type SheetPayload = Array<Array<string | { text: string; link: string; type: 'url' }>>;
+import { credentials } from '@/components/settings/settings.svelte';
 
 export class FeishuSheetManager {
 	constructor(
@@ -16,12 +17,142 @@ export class FeishuSheetManager {
 		 * 电子表格工作表的 ID。
 		 */
 		private sheetId: string,
-
 		/**
 		 * 电子表格工作表的范围索引。
 		 */
 		private rangeIndex: SheetRangeIndex
 	) {}
+
+	/**
+	 *  获取飞书表格的特定行的数据,默认读取第一行
+	 * @param rowIndex
+	 * @returns
+	 */
+	static async getSheetRowData(
+		sheetToken: string,
+		sheetId: string,
+		rowIndex: number = 1
+	): Promise<Array<string | number>> {
+		const range = `${sheetId}!${rowIndex}:${rowIndex}`;
+
+		if (!credentials.tokenManager) {
+			throw new Error('未找到有效的凭据');
+		}
+
+		const url = `https://open.feishu.cn/open-apis/sheets/v2/spreadsheets/${sheetToken}/values/${range}`;
+
+		const headers = {
+			Authorization: `Bearer ${await credentials.tokenManager.getToken()}`,
+			'Content-Type': 'application/json; charset=utf-8'
+		};
+
+		const res = await fetch(url, {
+			method: 'GET',
+			headers
+		});
+
+		if (!res.ok) {
+			throw new Error(`请求飞书表格接口失败，${await res.text()}`);
+		}
+
+		// TODO: 目前仅支持表头是字符串或数字的情况，后续可以考虑支持更多类型
+		const resData: FeishuApiResponse<{
+			valueRange: {
+				majorDimension: 'ROWS';
+				range: string;
+				values: Array<Array<string | number>>;
+			};
+		}> = await res.json();
+
+		if (resData.code !== 0) {
+			throw new Error(`飞书表格接口报错：${resData.msg}`);
+		}
+		// 返回特定行的数据
+		return resData.data.valueRange.values[0];
+	}
+
+	/**
+	 * 根据飞书表格的 token 获取其下所有工作表的 id和标题
+	 * @param sheetToken 飞书表格的 token
+	 * @returns
+	 */
+	static async getSheets(sheetToken: string) {
+		if (!credentials.tokenManager) {
+			throw new Error('未找到有效的凭据');
+		}
+
+		const url = `https://open.feishu.cn/open-apis/sheets/v3/spreadsheets/${sheetToken}/sheets/query`;
+
+		const headers = {
+			Authorization: `Bearer ${await credentials.tokenManager.getToken()}`,
+			'Content-Type': 'application/json; charset=utf-8'
+		};
+
+		const res = await fetch(url, {
+			method: 'GET',
+			headers
+		});
+
+		if (!res.ok) {
+			throw new Error(`请求飞书表格接口失败，${await res.text()}`);
+		}
+
+		const resData: FeishuApiResponse<{
+			sheets: Array<{
+				sheet_id: string;
+				title: string;
+			}>;
+		}> = await res.json();
+
+		return resData.data.sheets;
+	}
+
+	/**
+	 *  从输入的飞书表格链接中解析出 Sheet Token 和 Sheet ID
+	 * @returns
+	 */
+	static parseSheetUrl(sheetUrl: string) {
+		const url = new URL(sheetUrl);
+		const pathList = url.pathname.split('/');
+		const sheetToken = pathList[pathList.length - 1];
+		const sheetId = url.searchParams.get('sheet');
+		if (!sheetToken) {
+			alert('无法从链接中解析出 Sheet Token,请检查链接是否正确');
+			return;
+		}
+		return { sheetToken, sheetId };
+	}
+
+	static getPayload(fields: FetchedArticleFields[], articleData: FetchedArticle): SheetPayload {
+		const payload: SheetPayload = [[]];
+		for (const field of fields) {
+			switch (field) {
+				case 'author':
+					payload[0].push(articleData.author || '');
+					break;
+				case 'description':
+					payload[0].push(articleData.description || '');
+					break;
+				case 'published':
+					payload[0].push(articleData.published || '');
+					break;
+				case 'source':
+					payload[0].push(articleData.source || '');
+					break;
+				case 'title':
+					payload[0].push(articleData.title || '');
+					break;
+				case 'url':
+					if (articleData.url) {
+						payload[0].push({ text: articleData.url, link: articleData.url, type: 'url' });
+					} else {
+						payload[0].push('');
+					}
+					break;
+			}
+		}
+		return payload;
+	}
 
 	/**
 	 *  获取电子表格的范围字符串。如果用户指定了范围就返回指定范围，如果没有就将访问指定为整个工作表
@@ -31,6 +162,11 @@ export class FeishuSheetManager {
 		if (this.rangeIndex.endIndex === '' || this.rangeIndex.startIndex === '') {
 			return this.sheetId;
 		}
+
+		if (this.rangeIndex.startIndex && this.rangeIndex.endIndex === '') {
+			return `${this.sheetId}!${this.rangeIndex.startIndex}:Z`;
+		}
+
 		return `${this.sheetId}!${this.rangeIndex.startIndex}:${this.rangeIndex.endIndex}`;
 	}
 
@@ -46,8 +182,7 @@ export class FeishuSheetManager {
 			'Content-Type': 'application/json; charset=utf-8'
 		};
 		const body = JSON.stringify({
-			range: this.getRange(),
-			values: payload
+			valueRange: { range: this.getRange(), values: payload }
 		});
 
 		const res = await fetch(url, {
@@ -66,6 +201,4 @@ export class FeishuSheetManager {
 			throw new Error(`飞书表格接口报错：${resData.msg}`);
 		}
 	}
-
-	// TODO: 读取飞书表格字段，增加可视化的索引范围选择
 }

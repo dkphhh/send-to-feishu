@@ -1,20 +1,24 @@
 <script lang="ts">
 	import { getCurrentPath, getPagePath } from '@/lib/utils';
-	let { path, name }: { path: PageType; name: string } = $props();
+	let { path, name, disabled = false }: { path: PageType; name: string; disabled?: boolean } =
+		$props();
 	const currentPath = getCurrentPath();
 	const pagePath = getPagePath(path);
-	const isDisable = currentPath === pagePath;
+	const isCurrentPage = currentPath === pagePath;
 </script>
 
 <a
-	href={isDisable ? undefined : pagePath}
+	href={isCurrentPage || disabled ? undefined : pagePath}
 	target="_self"
-	aria-disabled={isDisable}
-	tabindex={isDisable ? -1 : 0}
+	aria-disabled={isCurrentPage || disabled}
+	tabindex={isCurrentPage || disabled ? -1 : 0}
 >
 	<button
 		type="button"
-		class="btn rounded-2xl btn-sm {isDisable ? 'btn-active cursor-default!' : ''}"
+		class="btn rounded-2xl btn-sm {isCurrentPage
+			? 'btn-active cursor-default!'
+			: ''} {disabled ? 'btn-disabled' : ''}"
+		{disabled}
 	>
 		{name}
 	</button>
