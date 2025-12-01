@@ -3,14 +3,20 @@ import pkg from './package.json';
 
 export default defineManifest({
 	manifest_version: 3,
-	name: pkg.name,
+	name: '保存到飞书',
 	version: pkg.version,
 	icons: {
-		48: 'public/logo.png'
+		16: 'public/icons/16.png',
+		32: 'public/icons/32.png',
+		48: 'public/icons/48.png',
+		128: 'public/icons/128.png'
 	},
 	action: {
 		default_icon: {
-			48: 'public/logo.png'
+			16: 'public/icons/16.png',
+			32: 'public/icons/32.png',
+			48: 'public/icons/48.png',
+			128: 'public/icons/128.png'
 		}
 	},
 	host_permissions: ['<all_urls>', 'https://open.feishu.cn/*'],
