@@ -13,7 +13,7 @@ export default defineManifest({
 			48: 'public/logo.png'
 		}
 	},
-	host_permissions: ['https://open.feishu.cn/*'],
+	host_permissions: ['<all_urls>', 'https://open.feishu.cn/*'],
 	background: {
 		service_worker: 'src/background/main.ts',
 		type: 'module'
@@ -24,7 +24,7 @@ export default defineManifest({
 			matches: ['http://*/*', 'https://*/*']
 		}
 	],
-	permissions: ['sidePanel', 'storage', 'contentSettings'],
+	permissions: ['sidePanel', 'storage', 'contentSettings', 'tabs'],
 	side_panel: {
 		default_path: 'src/pages/index/index.html'
 	}

@@ -1,7 +1,7 @@
 {
 	"name": "send-to-feishu",
 	"type": "module",
-	"version": "0.0.4",
+	"version": "0.0.5",
 	"private": true,
 	"scripts": {
 		"dev": "vite",
@@ -28,6 +28,7 @@
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-svelte": "^3.13.0",
 		"globals": "^16.5.0",
+		"p-limit": "^7.2.0",
 		"prettier": "^3.6.2",
 		"prettier-plugin-svelte": "^3.4.0",
 		"prettier-plugin-tailwindcss": "^0.7.1",

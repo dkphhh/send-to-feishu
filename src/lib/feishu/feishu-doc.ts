@@ -3,6 +3,7 @@ import { FeishuToken } from './feishu-token-manager';
 import { credentials } from '@/components/settings/settings.svelte';
 import { stringify } from 'yaml';
 import { stringifyDate } from '../utils';
+
 export type DocPayload = {
 	title: string;
 	content: string;
@@ -73,6 +74,24 @@ type ImageReplacementPayload = {
 		content?: string;
 	};
 };
+
+class ImageProcessingError extends Error {
+	constructor(
+		message: string,
+		public readonly blockId?: string,
+		public readonly imageUrl?: string,
+		public readonly originalError?: unknown
+	) {
+		super(message);
+		this.name = 'ImageProcessingError';
+	}
+}
+
+const isImageProcessingError = (error: unknown): error is ImageProcessingError =>
+	error instanceof ImageProcessingError;
+
+const IMAGE_UPLOAD_CONCURRENCY = 4;
+const IMAGE_REPLACE_CONCURRENCY = 4;
 
 export class FeishuDocManager {
 	constructor(
@@ -211,7 +230,7 @@ export class FeishuDocManager {
 		if (imageUrl.startsWith('data:')) {
 			const match = imageUrl.match(/^data:(.*?)(;base64)?,(.*)$/);
 			if (!match) {
-				throw new Error('图片 data URL 格式不正确');
+				throw new ImageProcessingError('图片 data URL 格式不正确', undefined, imageUrl);
 			}
 			const mimeType = match[1] || 'application/octet-stream';
 			const isBase64 = Boolean(match[2]);
@@ -241,7 +260,11 @@ export class FeishuDocManager {
 
 		const response = await fetch(imageUrl);
 		if (!response.ok) {
-			throw new Error(`下载图片失败：${imageUrl}，${response.status} ${response.statusText}`);
+			throw new ImageProcessingError(
+				`下载图片失败：${imageUrl}，${response.status} ${response.statusText}`,
+				undefined,
+				imageUrl
+			);
 		}
 		const contentType = response.headers.get('Content-Type') ?? 'application/octet-stream';
 		const buffer = await response.arrayBuffer();
@@ -262,7 +285,7 @@ export class FeishuDocManager {
 		if (typeof Buffer !== 'undefined') {
 			return Buffer.from(data, 'base64').toString('binary');
 		}
-		throw new Error('当前运行环境不支持 base64 解码');
+		throw new ImageProcessingError('当前运行环境不支持 base64 解码');
 	}
 
 	private getExtensionFromContentType(contentType?: string): string {
@@ -334,7 +357,7 @@ export class FeishuDocManager {
 					};
 					img.onerror = () => {
 						URL.revokeObjectURL(url);
-						reject(new Error('图片加载失败'));
+						reject(new ImageProcessingError('图片加载失败'));
 					};
 					img.src = url;
 				});
@@ -370,13 +393,14 @@ export class FeishuDocManager {
 		});
 
 		if (!res.ok) {
-			throw new Error(`上传图片素材失败，错误消息：${await res.text()}`);
+			const errorMessage = await res.text();
+			throw new ImageProcessingError(`上传图片素材失败，错误消息：${errorMessage}`, imageBlockId);
 		}
 
 		const resData: FeishuApiResponse<{ file_token: string }> = await res.json();
 
 		if (resData.code !== 0 || !resData.data?.file_token) {
-			throw new Error(`飞书上传图片素材接口报错：${resData.msg}`);
+			throw new ImageProcessingError(`飞书上传图片素材接口报错：${resData.msg}`, imageBlockId);
 		}
 
 		return resData.data.file_token;
@@ -395,55 +419,70 @@ export class FeishuDocManager {
 			'Content-Type': 'application/json; charset=utf-8'
 		};
 		const BATCH_LIMIT = 200;
+		const batches: ImageReplacementPayload[][] = [];
 		for (let i = 0; i < replacements.length; i += BATCH_LIMIT) {
-			const batch = replacements.slice(i, i + BATCH_LIMIT);
-			const body = JSON.stringify({
-				requests: batch.map((item) => {
-					const replace_image: Record<string, unknown> = {
-						token: item.fileToken
-					};
-					if (typeof item.width === 'number') {
-						replace_image.width = item.width;
-					}
-					if (typeof item.height === 'number') {
-						replace_image.height = item.height;
-					}
-					if (typeof item.align === 'number') {
-						replace_image.align = item.align;
-					}
-					if (item.caption?.content) {
-						replace_image.caption = { content: item.caption.content };
-					}
-					return {
-						block_id: item.blockId,
-						replace_image
-					};
-				})
-			});
-
-			const res = await fetch(url, {
-				method: 'PATCH',
-				headers,
-				body
-			});
-
-			if (!res.ok) {
-				throw new Error(`批量替换图片失败，错误消息：${await res.text()}`);
-			}
-
-			const resData: FeishuApiResponse = await res.json();
-
-			if (resData.code !== 0) {
-				throw new Error(`飞书批量更新块接口报错：${resData.msg}`);
-			}
+			batches.push(replacements.slice(i, i + BATCH_LIMIT));
 		}
+		let pointer = 0;
+		const concurrency = Math.max(1, Math.min(IMAGE_REPLACE_CONCURRENCY, batches.length));
+		const worker = async (): Promise<void> => {
+			while (true) {
+				const currentIndex = pointer++;
+				if (currentIndex >= batches.length) {
+					break;
+				}
+				const batch = batches[currentIndex];
+				const body = JSON.stringify({
+					requests: batch.map((item) => {
+						const replace_image: Record<string, unknown> = {
+							token: item.fileToken
+						};
+						if (typeof item.width === 'number') {
+							replace_image.width = item.width;
+						}
+						if (typeof item.height === 'number') {
+							replace_image.height = item.height;
+						}
+						if (typeof item.align === 'number') {
+							replace_image.align = item.align;
+						}
+						if (item.caption?.content) {
+							replace_image.caption = { content: item.caption.content };
+						}
+						return {
+							block_id: item.blockId,
+							replace_image
+						};
+					})
+				});
+
+				const res = await fetch(url, {
+					method: 'PATCH',
+					headers,
+					body
+				});
+
+				if (!res.ok) {
+					const errorMessage = await res.text();
+					throw new ImageProcessingError(`批量替换图片失败，错误消息：${errorMessage}`);
+				}
+
+				const resData: FeishuApiResponse = await res.json();
+
+				if (resData.code !== 0) {
+					throw new ImageProcessingError(`飞书批量更新块接口报错：${resData.msg}`);
+				}
+			}
+		};
+		await Promise.all(Array.from({ length: concurrency }, () => worker()));
 	}
 
 	private async handleImageBlocks(
 		documentId: string,
 		imageBlocks: Block[],
 		imageUrlMap: Map<string, string>,
-		blockIdMap: Map<string, string>
+		blockIdMap: Map<string, string>,
+		preloadedImageBinary?: Map<string, DownloadedImageBinary>
 	): Promise<void> {
 		if (imageBlocks.length === 0 || imageUrlMap.size === 0) {
 			return;
@@ -463,27 +502,106 @@ export class FeishuDocManager {
 		}
 
 		const replacements: ImageReplacementPayload[] = [];
-		for (const { block, imageUrl } of pending) {
-			const actualBlockId = blockIdMap.get(block.block_id) ?? block.block_id;
-			const imageBinary = await this.fetchImageBinary(imageUrl);
-			const fileToken = await this.uploadImageToBlock(actualBlockId, imageBinary);
-			const widthFromSource = imageBinary.width;
-			const heightFromSource = imageBinary.height;
-			const widthFromBlock =
-				typeof block.image?.width === 'number' ? block.image?.width : undefined;
-			const heightFromBlock =
-				typeof block.image?.height === 'number' ? block.image?.height : undefined;
-			replacements.push({
-				blockId: actualBlockId,
-				fileToken,
-				width: widthFromSource ?? widthFromBlock,
-				height: heightFromSource ?? heightFromBlock,
-				align: typeof block.image?.align === 'number' ? block.image?.align : undefined,
-				caption: block.image?.caption
-			});
-		}
+		let pointer = 0;
+		const concurrency = Math.max(1, Math.min(IMAGE_UPLOAD_CONCURRENCY, pending.length));
+		const worker = async (): Promise<void> => {
+			while (true) {
+				const currentIndex = pointer++;
+				if (currentIndex >= pending.length) {
+					break;
+				}
+				const { block, imageUrl } = pending[currentIndex];
+				const actualBlockId = blockIdMap.get(block.block_id) ?? block.block_id;
+				try {
+					const imageBinary =
+						preloadedImageBinary?.get(block.block_id) ?? (await this.fetchImageBinary(imageUrl));
+					const fileToken = await this.uploadImageToBlock(actualBlockId, imageBinary);
+					const widthFromSource = imageBinary.width;
+					const heightFromSource = imageBinary.height;
+					const widthFromBlock =
+						typeof block.image?.width === 'number' ? block.image?.width : undefined;
+					const heightFromBlock =
+						typeof block.image?.height === 'number' ? block.image?.height : undefined;
+					replacements.push({
+						blockId: actualBlockId,
+						fileToken,
+						width: widthFromSource ?? widthFromBlock,
+						height: heightFromSource ?? heightFromBlock,
+						align: typeof block.image?.align === 'number' ? block.image?.align : undefined,
+						caption: block.image?.caption
+					});
+				} catch (error) {
+					const imageError = isImageProcessingError(error)
+						? error
+						: new ImageProcessingError('图片上传或处理失败', block.block_id, imageUrl, error);
+					console.warn(
+						`图片 block ${block.block_id} 上传失败，已跳过：${imageError.message}`,
+						imageError
+					);
+				}
+			}
+		};
+		await Promise.all(Array.from({ length: concurrency }, () => worker()));
 
 		await this.replaceDocumentImages(documentId, replacements);
+	}
+
+	private async prepareImageBlocks(
+		imageBlocks: Block[],
+		imageUrlMap: Map<string, string>
+	): Promise<{
+		imageBinaryCache: Map<string, DownloadedImageBinary>;
+		skippedBlockIds: Set<string>;
+	}> {
+		const skippedBlockIds = new Set<string>();
+		const validEntries = imageBlocks
+			.map((block) => {
+				const imageUrl = imageUrlMap.get(block.block_id);
+				if (!imageUrl) {
+					console.warn(`图片 block ${block.block_id} 缺少 URL，已跳过`);
+					skippedBlockIds.add(block.block_id);
+					return null;
+				}
+				return { block, imageUrl };
+			})
+			.filter((item): item is { block: Block; imageUrl: string } => Boolean(item));
+
+		const imageBinaryCache = new Map<string, DownloadedImageBinary>();
+		if (validEntries.length === 0) {
+			for (const blockId of skippedBlockIds) {
+				imageUrlMap.delete(blockId);
+			}
+			return { imageBinaryCache, skippedBlockIds };
+		}
+
+		let pointer = 0;
+		const concurrency = Math.max(1, Math.min(IMAGE_UPLOAD_CONCURRENCY, validEntries.length));
+		const worker = async (): Promise<void> => {
+			while (true) {
+				const currentIndex = pointer++;
+				if (currentIndex >= validEntries.length) {
+					break;
+				}
+				const { block, imageUrl } = validEntries[currentIndex];
+				try {
+					const binary = await this.fetchImageBinary(imageUrl);
+					imageBinaryCache.set(block.block_id, binary);
+				} catch (error) {
+					const imageError = isImageProcessingError(error)
+						? error
+						: new ImageProcessingError('图片下载或解析失败', block.block_id, imageUrl, error);
+					skippedBlockIds.add(block.block_id);
+					imageUrlMap.delete(block.block_id);
+					console.warn(
+						`图片 block ${block.block_id} 预处理失败，已跳过：${imageError.message}`,
+						imageError
+					);
+				}
+			}
+		};
+		await Promise.all(Array.from({ length: concurrency }, () => worker()));
+
+		return { imageBinaryCache, skippedBlockIds };
 	}
 
 	/**
@@ -584,7 +702,26 @@ export class FeishuDocManager {
 			throw new Error('没有内容可以写入文档');
 		}
 
-		const imageBlocks = blocks.filter((block) => block.block_type === 27);
+		let imageBlocks = blocks.filter((block) => block.block_type === 27);
+		let preloadedImageBinary: Map<string, DownloadedImageBinary> | undefined;
+		if (imageBlocks.length > 0) {
+			const { imageBinaryCache, skippedBlockIds } = await this.prepareImageBlocks(
+				imageBlocks,
+				imageUrlMap
+			);
+			preloadedImageBinary = imageBinaryCache;
+			if (skippedBlockIds.size > 0) {
+				const skipSet = skippedBlockIds;
+				const filterBlocks = (list: Block[]): Block[] =>
+					list.filter((block) => !skipSet.has(block.block_id));
+				blocks = filterBlocks(blocks);
+				imageBlocks = filterBlocks(imageBlocks);
+				first_level_block_ids = first_level_block_ids.filter((id) => !skipSet.has(id));
+				if (blocks.length === 0) {
+					throw new Error('没有内容可以写入文档');
+				}
+			}
+		}
 
 		const tempBlockIdToRealBlockId = new Map<string, string>();
 		const recordBlockRelations = (relations: BlockIdRelation[]): void => {
@@ -666,7 +803,13 @@ export class FeishuDocManager {
 			recordBlockRelations(relations);
 		}
 
-		await this.handleImageBlocks(documentId, imageBlocks, imageUrlMap, tempBlockIdToRealBlockId);
+		await this.handleImageBlocks(
+			documentId,
+			imageBlocks,
+			imageUrlMap,
+			tempBlockIdToRealBlockId,
+			preloadedImageBinary
+		);
 
 		return documentId;
 	}
