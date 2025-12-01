@@ -1,4 +1,5 @@
 // API 参考文档 https://open.feishu.cn/document/server-docs/docs/sheets-v3/data-operation/append-data
+import { stringifyDate } from '../utils';
 import { FeishuToken } from './feishu-token-manager';
 export type SheetPayload = Array<Array<string | { text: string; link: string; type: 'url' }>>;
 import { credentials } from '@/components/settings/settings.svelte';
@@ -24,7 +25,7 @@ export class FeishuSheetManager {
 	) {}
 
 	/**
-	 *  获取飞书表格的特定行的数据,默认读取第一行
+	 *  获取飞书表格的特定行的数据，默认读取第一行
 	 * @param rowIndex
 	 * @returns
 	 */
@@ -72,7 +73,7 @@ export class FeishuSheetManager {
 	}
 
 	/**
-	 * 根据飞书表格的 token 获取其下所有工作表的 id和标题
+	 * 根据飞书表格的 token 获取其下所有工作表的 id 和标题
 	 * @param sheetToken 飞书表格的 token
 	 * @returns
 	 */
@@ -117,13 +118,13 @@ export class FeishuSheetManager {
 		const sheetToken = pathList[pathList.length - 1];
 		const sheetId = url.searchParams.get('sheet');
 		if (!sheetToken) {
-			alert('无法从链接中解析出 Sheet Token,请检查链接是否正确');
+			alert('无法从链接中解析出 Sheet Token，请检查链接是否正确');
 			return;
 		}
 		return { sheetToken, sheetId };
 	}
 
-	static getPayload(fields: FetchedArticleFields[], articleData: FetchedArticle): SheetPayload {
+	static getPayload(fields: FetchedArticleField[], articleData: FetchedArticle): SheetPayload {
 		const payload: SheetPayload = [[]];
 		for (const field of fields) {
 			switch (field) {
@@ -133,9 +134,28 @@ export class FeishuSheetManager {
 				case 'description':
 					payload[0].push(articleData.description || '');
 					break;
-				case 'published':
-					payload[0].push(articleData.published || '');
+				case 'published': {
+					const date = new Date(articleData.published || '');
+					if (isNaN(date.getTime())) {
+						// Check for invalid date
+						payload[0].push('');
+					} else {
+						// Format to Beijing time (UTC+8)
+
+						// const formattedDate = new Intl.DateTimeFormat('zh-CN', {
+						// 	year: 'numeric',
+						// 	month: '2-digit',
+						// 	day: '2-digit',
+						// 	hour: '2-digit',
+						// 	minute: '2-digit',
+						// 	second: '2-digit',
+						// 	hour12: false,
+						// 	timeZone: 'Asia/Shanghai' // Beijing time zone
+						// }).format(date);
+						payload[0].push(stringifyDate(date)); // Replace slashes with hyphens
+					}
 					break;
+				}
 				case 'source':
 					payload[0].push(articleData.source || '');
 					break;
@@ -164,10 +184,10 @@ export class FeishuSheetManager {
 		}
 
 		if (this.rangeIndex.startIndex && this.rangeIndex.endIndex === '') {
-			return `${this.sheetId}!${this.rangeIndex.startIndex}:Z`;
+			return `${this.sheetId}!${this.rangeIndex.startIndex.toUpperCase()}:Z`;
 		}
 
-		return `${this.sheetId}!${this.rangeIndex.startIndex}:${this.rangeIndex.endIndex}`;
+		return `${this.sheetId}!${this.rangeIndex.startIndex.toUpperCase()}:${this.rangeIndex.endIndex.toUpperCase()}`;
 	}
 
 	/**

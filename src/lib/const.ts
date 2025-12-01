@@ -5,11 +5,11 @@ export const FORM_ICONS: Record<FormTypeName, string> = {
 	联动配置: '🤝'
 };
 
-export const ARTICLE_FIELDS: Record<FetchedArticleFields, string> = {
-	author: '作者',
-	description: '描述',
-	published: '发布时间',
-	source: '来源',
+export const ARTICLE_FIELDS: Record<FetchedArticleField, string> = {
 	title: '标题',
-	url: '链接'
+	published: '发布时间',
+	url: '链接',
+	author: '作者',
+	source: '来源',
+	description: '描述'
 };

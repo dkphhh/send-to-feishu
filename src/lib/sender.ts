@@ -32,7 +32,7 @@ async function sendToFeishuSheet(formId: string, payload: SheetPayload) {
 
 	await sheetManager.insertRowToFeishuSheet(payload);
 
-	return credentials.feishuBaseUrl + `sheets/${form.sheetToken}sheet=${form.sheetId}`;
+	return credentials.feishuBaseUrl + `sheets/${form.sheetToken}?sheet=${form.sheetId}`;
 }
 
 async function sendToFeishuBitable(formId: string, payload: BitablePayload) {
@@ -70,7 +70,11 @@ async function sendToFeishuBitable(formId: string, payload: BitablePayload) {
  * @param {DocPayload} payload 要发送的文档内容
  * @returns {Promise<string>} 返回飞书文档的链接
  */
-async function sendToFeishuDoc(formId: string, payload: DocPayload): Promise<string> {
+async function sendToFeishuDoc(
+	formId: string,
+	payload: DocPayload,
+	metaData?: Omit<FetchedArticle, 'content'>
+): Promise<string> {
 	if (!credentials.tokenManager) {
 		// TODO:能否自定义错误类型？通过特定的错误类型，让用户自动跳转到授权页面
 		throw new Error('未找到有效的凭据');
@@ -88,9 +92,9 @@ async function sendToFeishuDoc(formId: string, payload: DocPayload): Promise<str
 
 	const docManager = new FeishuDocManager(credentials.tokenManager, form.folderToken);
 
-	const docId = await docManager.writeDocContent(payload);
+	const docId = await docManager.writeDocContent(payload, metaData);
 
-	const docUrl = credentials.feishuBaseUrl + `/docx/${docId}`;
+	const docUrl = credentials.feishuBaseUrl + `docx/${docId}`;
 
 	return docUrl;
 }
@@ -131,16 +135,7 @@ export async function sendToFeishu(formId: string): Promise<string> {
 
 	switch (form.formType) {
 		case '飞书表格': {
-			const payload: SheetPayload = [
-				[
-					articleData.title,
-					{
-						text: articleData.url,
-						link: url,
-						type: 'url'
-					}
-				]
-			];
+			const payload: SheetPayload = FeishuSheetManager.getPayload(form.fields, articleData);
 			console.log('Sheet payload:', payload);
 			return await sendToFeishuSheet(formId, payload);
 		}
@@ -153,7 +148,9 @@ export async function sendToFeishu(formId: string): Promise<string> {
 				title: articleData.title,
 				content: articleData.content
 			};
-			return await sendToFeishuDoc(formId, payload as DocPayload);
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
+			const { content, ...rest } = articleData;
+			return await sendToFeishuDoc(formId, payload as DocPayload, rest);
 		}
 		case '联动配置': {
 			const linkForm = getForm(form.linkForm.id);
@@ -177,7 +174,6 @@ export async function sendToFeishu(formId: string): Promise<string> {
 
 			switch (linkForm.formType) {
 				case '多维表格': {
-				
 					// 将文章中的 URL 字段替换为文档链接
 					const modifiedArticleData = { ...articleData, url: docUrl };
 					const payload: BitablePayload = FeishuBitableManager.getPayload(

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { FeishuBitableManager, type BitableFieldsData } from '@/lib/feishu/feishu-bitable';
 	import { ARTICLE_FIELDS } from '@/lib/const';
-	
+
 	let { form = $bindable() }: { form: BitableFormType } = $props();
 
 	let allBitableFields: Promise<BitableFieldsData['items']> | undefined = $state();
@@ -11,28 +11,47 @@
 	}
 </script>
 
-<div class="">
+<div class="flex flex-col gap-2">
+	<label for="tableId" class="label">匹配多维表格字段</label>
 	{#if !allBitableFields}
 		<button
 			disabled={!form.appToken || !form.tableId}
 			type="button"
-			class="btn btn-sm btn-primary"
+			class="btn btn-sm btn-neutral"
 			onclick={getBitableFields}
 		>
 			加载多维表格字段
 		</button>
 	{:else}
 		{#await allBitableFields}
-			<span class="loading loading-sm loading-dots"></span>
+			<button disabled type="button" class="btn btn-sm btn-neutral" onclick={getBitableFields}>
+				加载多维表格字段<span class="loading loading-sm loading-dots"></span>
+			</button>
 		{:then bitableFields}
 			<div class="flex flex-col gap-2">
-				<p class="label">匹配多维表格字段</p>
-				{#each Object.keys(form.fieldsMap) as field (field)}
-					{@const f = field as FetchedArticleFields}
+				{#each Object.keys(ARTICLE_FIELDS) as field (field)}
+					{@const f = field as FetchedArticleField}
 					<label for={f} class="select">
 						<span class="label w-30">{ARTICLE_FIELDS[f]}</span>
-						<select bind:value={form.fieldsMap[f]} id={f}>
-							<option value={undefined}>不保存</option>
+						<select
+							value={form.fieldsMap[f]?.name || ''}
+							onchange={(e) => {
+								const selectedName = e.currentTarget.value;
+								if (!selectedName) {
+									form.fieldsMap[f] = undefined;
+								} else {
+									const selectedField = bitableFields.find((bf) => bf.field_name === selectedName);
+									if (selectedField) {
+										form.fieldsMap[f] = {
+											name: selectedField.field_name,
+											type: selectedField.type
+										};
+									}
+								}
+							}}
+							id={f}
+						>
+							<option value="">不保存</option>
 							{#each bitableFields as bf (bf.field_id)}
 								<option value={bf.field_name}>{bf.field_name}</option>
 							{/each}

@@ -1,7 +1,5 @@
 import { extractFromHtml } from '@extractus/article-extractor';
-import YAML from 'yaml';
 import TurndownService from 'turndown';
-
 
 /**
  * 一个将 html 转化为 markdown 的 constructor 实例
@@ -39,18 +37,10 @@ export async function extractWebArticle(htmlString: string, url: string): Promis
 		url
 	};
 
-	const markdownText = `---\n${YAML.stringify(metadata).trim()}\n---\n\n${turndownService.turndown(
-		article.content as string
-	)}`;
+	const markdownText = turndownService.turndown(article.content as string);
 
 	return {
 		...metadata,
 		content: markdownText
 	};
 }
-
-
-
-
-
-

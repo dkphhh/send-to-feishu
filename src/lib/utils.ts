@@ -44,3 +44,25 @@ export async function getCurrentTabContent(): Promise<{ html: string; url: strin
 	}
 	throw new Error('No active tab found');
 }
+
+export function stringifyDate(dateInput: Date | string | number): string {
+	const date = dateInput instanceof Date ? dateInput : new Date(dateInput);
+	if (Number.isNaN(date.getTime())) {
+		throw new Error('Invalid date value provided to stringifyDate');
+	}
+
+	const formattedDate = new Intl.DateTimeFormat('zh-CN', {
+		year: 'numeric',
+		month: '2-digit',
+		day: '2-digit',
+		hour: '2-digit',
+		minute: '2-digit',
+		second: '2-digit',
+		hour12: false,
+		timeZone: 'Asia/Shanghai' // Beijing time zone
+	})
+		.format(date)
+		.replace(/\//g, '-');
+
+	return formattedDate;
+}

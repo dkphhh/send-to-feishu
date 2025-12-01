@@ -66,7 +66,7 @@ declare global {
 		 */
 		content: string;
 	}
-	type FetchedArticleFields = Exclude<keyof FetchedArticle, 'content'>;
+	type FetchedArticleField = Exclude<keyof FetchedArticle, 'content'>;
 
 	type SheetRangeIndex = { startIndex: string; endIndex: string };
 
@@ -98,7 +98,7 @@ declare global {
 		/**
 		 * 包含的字段
 		 */
-		fields: FetchedArticleFields[];
+		fields: FetchedArticleField[];
 	};
 
 	type BitableFormType = {
@@ -125,9 +125,9 @@ declare global {
 		/**
 		 * 包含的字段映射关系
 		 * key: 抓取的文章字段
-		 * value: 飞书多维表格的字段
+		 * value: 飞书多维表格的字段，{name: string, type: number} 形式
 		 */
-		fieldsMap: Record<FetchedArticleFields, string|undefined>;
+		fieldsMap: Record<FetchedArticleField, { name: string; type: number } | undefined>;
 	};
 
 	type DocFromType = {

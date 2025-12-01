@@ -1,12 +1,9 @@
 <script lang="ts">
 	import FormSettingLayout from '@/components/layout/FormSettingLayout.svelte';
-
 	import { getPagePath } from '@/lib/utils';
 	import BitableArticleFieldMatch from './BitableArticleFieldMatch.svelte';
 	let { form }: { form: BitableFormType } = $props();
 	let isComplete = $derived(!!form.appToken && !!form.tableId && !!form.name);
-
-	// TODO：fieldsMap 的创建与更改
 </script>
 
 <FormSettingLayout {form} {isComplete}>

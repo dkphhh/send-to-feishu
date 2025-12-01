@@ -1,8 +1,11 @@
 <script lang="ts">
 	import FormSettingLayout from '@/components/layout/FormSettingLayout.svelte';
+	import SheetFieldSelector from '@/components/forms/SheetFieldSelector.svelte';
 	import { getPagePath } from '@/lib/utils';
 	let { form }: { form: SheetFormType } = $props();
-	let isComplete = $derived(!!form.sheetToken && !!form.sheetId && !!form.name);
+	let isComplete = $derived(
+		!!form.sheetToken && !!form.sheetId && !!form.name && form.fields.length > 0
+	);
 </script>
 
 <FormSettingLayout {form} {isComplete}>
@@ -60,28 +63,39 @@
 		/>
 	</div>
 
-	<!-- 开始位置 -->
-	<div>
-		<label for="startIndex" class="label">开始位置：链接所在的表格列，例如 C 列，就填 C</label>
-		<input
-			id="startIndex"
-			type="text"
-			class="input"
-			placeholder="开始位置"
-			bind:value={form.rangeIndex.startIndex}
-			oninput={() => (form.rangeIndex.startIndex = form.rangeIndex.startIndex.toUpperCase())}
-		/>
+	<!-- 起止列 -->
+	<div class="flex flex-row gap-2">
+		<div class="w-1/2">
+			<label for="startIndex" class="label">
+				<span class="label-text">起始列</span>
+			</label>
+			<input
+				id="startIndex"
+				type="text"
+				class="input-bordered input"
+				placeholder="起始列"
+				bind:value={form.rangeIndex.startIndex}
+			/>
+
+			<span class="label text-wrap">如果数据表从 A 列开始，就填 A</span>
+		</div>
+
+		<div class="w-1/2">
+			<label for="endIndex" class="label">
+				<span class="label-text">结束列</span>
+			</label>
+			<input
+				id="endIndex"
+				type="text"
+				class="input-bordered input"
+				placeholder="结束列"
+				bind:value={form.rangeIndex.endIndex}
+			/>
+
+			<span class="label">结束列建议留空</span>
+		</div>
 	</div>
-	<!-- 结束位置 -->
-	<div>
-		<label for="endIndex" class="label">结束位置：开始位置的后一列，例如 D 列，就填 D</label>
-		<input
-			id="endIndex"
-			type="text"
-			class="input"
-			placeholder="结束位置"
-			bind:value={form.rangeIndex.endIndex}
-			oninput={() => (form.rangeIndex.endIndex = form.rangeIndex.endIndex.toUpperCase())}
-		/>
-	</div>
+
+	<!-- 字段选择 -->
+	<SheetFieldSelector bind:fields={form.fields} />
 </FormSettingLayout>

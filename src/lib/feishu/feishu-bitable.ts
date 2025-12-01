@@ -52,7 +52,7 @@ export class FeishuBitableManager {
 		const appToken = pathList[pathList.length - 1];
 		const tableId = url.searchParams.get('table');
 		if (!appToken) {
-			alert('无法从链接中解析出 app Token,请检查链接是否正确');
+			alert('无法从链接中解析出 app Token，请检查链接是否正确');
 			return;
 		}
 		return { appToken, tableId };
@@ -110,23 +110,27 @@ export class FeishuBitableManager {
 		const payload: BitablePayload = {};
 
 		Object.entries(fieldsMap).forEach(([articleField, bitableField]) => {
-			if (!bitableField || bitableField.trim() === '') {
+			if (!bitableField) {
 				// 未配置该字段映射，跳过
 				return;
 			}
 
-			const value = articleData[articleField as FetchedArticleFields];
+			const value = articleData[articleField as FetchedArticleField];
+
 			if (value !== undefined && value.trim() !== '') {
-				if (articleField === 'url') {
-					// URL 字段，特殊处理
-					payload[bitableField] = { text: value, link: value };
-				} else if (articleField === 'published') {
-					// 发布时间字段，转化为时间戳
+				if (articleField === 'url' && bitableField.type === 15) {
+					// 链接字段，且多维表格字段类型为链接类型
+					payload[bitableField.name] = { link: value, text: value };
+					return;
+				} else if (articleField === 'published' && bitableField.type === 5) {
+					// 时间字段，且多维表格对应字段也是时间格式，转化为时间戳
 					const timestamp = new Date(value).getTime();
-					payload[bitableField] = timestamp;
+					payload[bitableField.name] = timestamp;
+					return;
 				} else {
-					// 普通字段，暂时全部按字符串处理
-					payload[bitableField] = value;
+					// 其他情况，暂时全部按字符串处理
+					payload[bitableField.name] = value;
+					return;
 				}
 			}
 		});

@@ -67,6 +67,7 @@
 
 		{@render children()}
 
+		<div class="divider"></div>
 		<button disabled={!isComplete} onclick={handleSave} class="btn mt-4 btn-neutral"
 			>{isCreateMode ? '新建配置' : '保存配置'}</button
 		>
