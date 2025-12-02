@@ -9,10 +9,19 @@ export function getCurrentPath(): string {
 	return window.location.pathname;
 }
 
+/**
+ *
+ * page 为 "index" | "settings" | "formList" 时，不接受参数 searchParams
+ * page 为 "formEdit" 时 searchParams 的 type 和 formId 都必须填写
+ * page 为  formCreate 时，searchParams 只需要填写 type
+ *
+ * @param page
+ * @param searchParams
+ * @returns
+ */
 export function getPagePath(
 	page: PageType,
 	searchParams?: {
-		mode?: 'edit' | 'create';
 		type?: FormTypeName;
 		formId?: string;
 	}
@@ -23,17 +32,16 @@ export function getPagePath(
 
 	const params = new URLSearchParams(searchParams);
 
-	return `/src/pages/${page}/index.html?${params.toString()}`;
+	return chrome.runtime.getURL(`/src/pages/${page}/index.html?${params.toString()}`);
 }
 
 export function gotoPage(
 	page: PageType,
 	searchParams?: {
-		mode?: 'edit' | 'create';
 		type?: FormTypeName;
 		formId?: string;
 	}
-) {
+): void {
 	window.location.href = getPagePath(page, searchParams);
 }
 

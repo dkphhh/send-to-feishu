@@ -1,27 +1,19 @@
-function parseSheetUrl(sheetUrl: string) {
-	const sheetsUrl = 'https://yuanwang.feishu.cn/' + 'sheets/';
-	const wikiUrl = 'https://yuanwang.feishu.cn/' + 'wiki/';
+const urlObj = new URL(
+	'https://yuanwang.feishu.cn/wiki/Xjy0wDCYZi0aSYkZQL7cW5z8nCh?table=tblbe5qlPODl1bGk&view=vewiuL69F3'
+);
 
-	if (!sheetUrl.startsWith(sheetsUrl) && !sheetUrl.startsWith(wikiUrl)) {
-		throw new Error('多维表格链接不属于当前飞书域名，请检查链接是否正确');
-	}
 
-	const url = new URL(sheetUrl);
-	const pathList = url.pathname.split('/');
-	const sheetToken = pathList[pathList.length - 1];
-	const sheetId = url.searchParams.get('sheet');
-	if (!sheetToken) {
-		alert('无法从链接中解析出 Sheet Token，请检查链接是否正确');
-		return;
-	}
-	return { sheetToken, sheetId };
+const pathList = urlObj.pathname.split('/');
+const tokenType = pathList[1];
+const nodeToken = pathList[pathList.length - 1];
+
+console.log('pathList', pathList);
+console.log('nodeToken', nodeToken);
+
+if (!nodeToken) {
+	throw new Error('无法从链接中解析出知识结点 Token，请检查链接是否正确');
 }
-
-const b = parseSheetUrl('https://yuanwang.feishu.cn/sheets/HdQNsSKeWhyuLCtY2KYcad8fnvc');
-
-
-const c = parseSheetUrl('https://yuanwang.feishu.cn/wiki/K9mZwnba5iztlEkmZQLcdZP1njd?sheet=rsqazt');
-
-console.log(b);
-
-console.log(c);
+// 判断是否是知识结点 token
+if (tokenType === 'wiki') {
+	console.log('是知识结点 token');
+}

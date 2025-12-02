@@ -1,8 +1,9 @@
 // API 参考文档 https://open.feishu.cn/document/server-docs/docs/sheets-v3/data-operation/append-data
 import { stringifyDate } from '../utils';
-import { FeishuToken } from './feishu-token-manager';
+import { FeishuToken } from './credential-token-manager';
 export type SheetPayload = Array<Array<string | { text: string; link: string; type: 'url' }>>;
 import { credentials } from '@/components/settings/settings.svelte';
+import { getNodeToken } from './get-node-token';
 
 export class FeishuSheetManager {
 	constructor(
@@ -109,25 +110,17 @@ export class FeishuSheetManager {
 	}
 
 	/**
-	 *  从输入的电子表格链接中解析出 Sheet Token 和 Sheet ID
+	 *  从输入的电子表格链接中解析出 Sheet Token
 	 * @returns
 	 */
-	static parseSheetUrl(sheetUrl: string) {
-		const sheetsUrl = credentials.feishuBaseUrl + 'sheets/';
-		const wikiUrl = credentials.feishuBaseUrl + 'wiki/';
-		if (!sheetUrl.startsWith(sheetsUrl) && !sheetUrl.startsWith(wikiUrl)) {
-			throw new Error('多维表格链接不属于当前飞书域名，请检查链接是否正确');
+	static async parseSheetUrl(sheetUrl: string) {
+		const { token, objectType } = await getNodeToken(sheetUrl);
+
+		if (objectType !== 'sheet') {
+			throw new Error('提供的链接不是电子表格链接，请检查链接是否正确');
 		}
 
-		const url = new URL(sheetUrl);
-		const pathList = url.pathname.split('/');
-		const sheetToken = pathList[pathList.length - 1];
-		const sheetId = url.searchParams.get('sheet');
-		if (!sheetToken) {
-			alert('无法从链接中解析出 Sheet Token，请检查链接是否正确');
-			return;
-		}
-		return { sheetToken, sheetId };
+		return token;
 	}
 
 	static getPayload(fields: FetchedArticleField[], articleData: FetchedArticle): SheetPayload {

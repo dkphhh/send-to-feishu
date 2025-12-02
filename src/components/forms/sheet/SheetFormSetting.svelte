@@ -1,7 +1,6 @@
 <script lang="ts">
 	import FormSettingLayout from '@/components/layout/FormSettingLayout.svelte';
-	import SheetFieldSelector from '@/components/forms/SheetFieldSelector.svelte';
-	import { getPagePath } from '@/lib/utils';
+	import SheetFieldSelector from '@/components/forms/sheet/SheetFieldSelector.svelte';
 	let { form }: { form: SheetFormType } = $props();
 	let isComplete = $derived(
 		!!form.sheetToken && !!form.sheetId && !!form.name && form.fields.length > 0
@@ -12,17 +11,6 @@
 	{#snippet title()}
 		<span class="mx-1 badge badge-sm badge-neutral">电子表格</span>
 	{/snippet}
-	<p class="label text-wrap">仅保存文章链接，如需保存文章内容，请创建</p>
-	<p>
-		<a
-			href={getPagePath('formEdit', {
-				type: '飞书文档',
-				mode: 'create'
-			})}
-			class="badge badge-sm">飞书文档配置</a
-		>
-		<a href="/" class="badge badge-sm">联动配置</a>
-	</p>
 
 	<!-- 配置名称 -->
 	<div>

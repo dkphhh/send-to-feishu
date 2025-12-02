@@ -1,6 +1,7 @@
 // API 参考文档 https://open.feishu.cn/document/server-docs/docs/bitable-v1/app-table-record/create?appId=cli_a7a5d48eeab81013
-import { FeishuToken } from './feishu-token-manager';
+import { FeishuToken } from './credential-token-manager';
 import { credentials } from '@/components/settings/settings.svelte';
+import { getNodeToken } from './get-node-token';
 export type BitablePayload = Record<string, string | number | { text: string; link: string }>;
 export type BitableFieldsData = {
 	has_more: boolean;
@@ -43,24 +44,15 @@ export class FeishuBitableManager {
 	) {}
 
 	/**
-	 *  从输入的多维表格链接中解析出 app Token 和 table Id
+	 *  从输入的多维表格链接中解析出 app Token
 	 * @returns
 	 */
-	static parseBitableUrl(bitableUrl: string) {
-		const baseUrl = credentials.feishuBaseUrl + 'base/';
-		const wikiUrl = credentials.feishuBaseUrl + 'wiki/';
-		if (!bitableUrl.startsWith(baseUrl) && !bitableUrl.startsWith(wikiUrl)) {
-			throw new Error('多维表格链接不属于当前飞书域名，请检查链接是否正确');
+	static async parseBitableUrl(bitableUrl: string) {
+		const { token, objectType } = await getNodeToken(bitableUrl);
+		if (objectType !== 'bitable') {
+			throw new Error('输入的链接不是有效的多维表格链接，请检查链接是否正确');
 		}
-		const url = new URL(bitableUrl);
-		const pathList = url.pathname.split('/');
-		const appToken = pathList[pathList.length - 1];
-		const tableId = url.searchParams.get('table');
-		if (!appToken) {
-			alert('无法从链接中解析出 app Token，请检查链接是否正确');
-			return;
-		}
-		return { appToken, tableId };
+		return token;
 	}
 
 	/**

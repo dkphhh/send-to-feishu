@@ -1,8 +1,7 @@
 <script lang="ts">
 	import FormSettingLayout from '@/components/layout/FormSettingLayout.svelte';
-	import { getPagePath } from '@/lib/utils';
 	let { form }: { form: DocFromType } = $props();
-	let isComplete = $derived(!!form.name);
+	let isComplete = $derived(!!form.name && !!form.folderToken);
 </script>
 
 <FormSettingLayout {form} {isComplete}>
@@ -10,23 +9,6 @@
 		<span class="mx-1 badge badge-sm badge-neutral">飞书文档</span>
 	{/snippet}
 
-	<p class="label text-wrap">保存文章内容，如仅需保存文章链接，请创建</p>
-	<p>
-		<a
-			href={getPagePath('formEdit', {
-				type: '多维表格',
-				mode: 'create'
-			})}
-			class="badge badge-sm">多维表格配置</a
-		>
-		<a
-			href={getPagePath('formEdit', {
-				type: '电子表格',
-				mode: 'create'
-			})}
-			class="badge badge-sm">电子表格配置</a
-		>
-	</p>
 
 	<!-- 配置名称 -->
 	<label for="name" class="label">配置名称</label>
@@ -42,11 +24,12 @@
 	<!-- Folder Token -->
 	<label for="folderToken" class="label">Folder Token</label>
 	<input
+		required
 		id="folderToken"
 		type="text"
 		class="input"
 		placeholder="Folder Token"
 		bind:value={form.folderToken}
 	/>
-	<p class="label">代表新建文档的文件夹，不填将在根目录新建文档。</p>
+	<p class="label">代表新建文档的文件夹。</p>
 </FormSettingLayout>

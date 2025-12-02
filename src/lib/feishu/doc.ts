@@ -1,5 +1,5 @@
 // API 参考文档 https://open.feishu.cn/document/server-docs/docs/bitable-v1/app-table-record/create?appId=cli_a7a5d48eeab81013
-import { FeishuToken } from './feishu-token-manager';
+import { FeishuToken } from './credential-token-manager';
 import { credentials } from '@/components/settings/settings.svelte';
 import { stringify } from 'yaml';
 import { stringifyDate } from '../utils';
@@ -92,6 +92,41 @@ const isImageProcessingError = (error: unknown): error is ImageProcessingError =
 
 const IMAGE_UPLOAD_CONCURRENCY = 4;
 const IMAGE_REPLACE_CONCURRENCY = 4;
+
+const pLimit = (concurrency: number) => {
+	const queue: (() => Promise<void>)[] = [];
+	let active = 0;
+
+	const next = () => {
+		if (queue.length && active < concurrency) {
+			const task = queue.shift()!;
+			task();
+		}
+	};
+
+	return <T>(fn: () => Promise<T>): Promise<T> => {
+		return new Promise((resolve, reject) => {
+			const run = async () => {
+				active++;
+				try {
+					const result = await fn();
+					resolve(result);
+				} catch (err) {
+					reject(err);
+				} finally {
+					active--;
+					next();
+				}
+			};
+
+			if (active < concurrency) {
+				run();
+			} else {
+				queue.push(run);
+			}
+		});
+	};
+};
 
 export class FeishuDocManager {
 	constructor(
@@ -495,73 +530,37 @@ export class FeishuDocManager {
 		await Promise.all(Array.from({ length: concurrency }, () => worker()));
 	}
 
-	private async handleImageBlocks(
-		documentId: string,
-		imageBlocks: Block[],
-		imageUrlMap: Map<string, string>,
-		blockIdMap: Map<string, string>,
-		preloadedImageBinary?: Map<string, DownloadedImageBinary>
-	): Promise<void> {
-		if (imageBlocks.length === 0 || imageUrlMap.size === 0) {
-			return;
+	private async uploadAndGetReplacement(
+		realBlockId: string,
+		imageBinary: DownloadedImageBinary,
+		block: Block
+	): Promise<ImageReplacementPayload | null> {
+		try {
+			const fileToken = await this.uploadImageToBlock(realBlockId, imageBinary);
+			const widthFromSource = imageBinary.width;
+			const heightFromSource = imageBinary.height;
+			const widthFromBlock =
+				typeof block.image?.width === 'number' ? block.image?.width : undefined;
+			const heightFromBlock =
+				typeof block.image?.height === 'number' ? block.image?.height : undefined;
+			return {
+				blockId: realBlockId,
+				fileToken,
+				width: widthFromSource ?? widthFromBlock,
+				height: heightFromSource ?? heightFromBlock,
+				align: typeof block.image?.align === 'number' ? block.image?.align : undefined,
+				caption: block.image?.caption
+			};
+		} catch (error) {
+			const imageError = isImageProcessingError(error)
+				? error
+				: new ImageProcessingError('图片上传或处理失败', block.block_id, undefined, error);
+			console.warn(
+				`图片 block ${block.block_id} (real: ${realBlockId}) 上传失败，已跳过：${imageError.message}`,
+				imageError
+			);
+			return null;
 		}
-		const pending = imageBlocks
-			.map((block) => {
-				const imageUrl = imageUrlMap.get(block.block_id);
-				if (!imageUrl) {
-					console.warn(`未找到图片 URL，跳过 block ${block.block_id}`);
-					return null;
-				}
-				return { block, imageUrl };
-			})
-			.filter((item): item is { block: Block; imageUrl: string } => Boolean(item));
-		if (pending.length === 0) {
-			return;
-		}
-
-		const replacements: ImageReplacementPayload[] = [];
-		let pointer = 0;
-		const concurrency = Math.max(1, Math.min(IMAGE_UPLOAD_CONCURRENCY, pending.length));
-		const worker = async (): Promise<void> => {
-			while (true) {
-				const currentIndex = pointer++;
-				if (currentIndex >= pending.length) {
-					break;
-				}
-				const { block, imageUrl } = pending[currentIndex];
-				const actualBlockId = blockIdMap.get(block.block_id) ?? block.block_id;
-				try {
-					const imageBinary =
-						preloadedImageBinary?.get(block.block_id) ?? (await this.fetchImageBinary(imageUrl));
-					const fileToken = await this.uploadImageToBlock(actualBlockId, imageBinary);
-					const widthFromSource = imageBinary.width;
-					const heightFromSource = imageBinary.height;
-					const widthFromBlock =
-						typeof block.image?.width === 'number' ? block.image?.width : undefined;
-					const heightFromBlock =
-						typeof block.image?.height === 'number' ? block.image?.height : undefined;
-					replacements.push({
-						blockId: actualBlockId,
-						fileToken,
-						width: widthFromSource ?? widthFromBlock,
-						height: heightFromSource ?? heightFromBlock,
-						align: typeof block.image?.align === 'number' ? block.image?.align : undefined,
-						caption: block.image?.caption
-					});
-				} catch (error) {
-					const imageError = isImageProcessingError(error)
-						? error
-						: new ImageProcessingError('图片上传或处理失败', block.block_id, imageUrl, error);
-					console.warn(
-						`图片 block ${block.block_id} 上传失败，已跳过：${imageError.message}`,
-						imageError
-					);
-				}
-			}
-		};
-		await Promise.all(Array.from({ length: concurrency }, () => worker()));
-
-		await this.replaceDocumentImages(documentId, replacements);
 	}
 
 	private async prepareImageBlocks(
@@ -721,23 +720,33 @@ export class FeishuDocManager {
 		}
 
 		let imageBlocks = blocks.filter((block) => block.block_type === 27);
-		let preloadedImageBinary: Map<string, DownloadedImageBinary> | undefined;
-		if (imageBlocks.length > 0) {
-			const { imageBinaryCache, skippedBlockIds } = await this.prepareImageBlocks(
-				imageBlocks,
-				imageUrlMap
-			);
-			preloadedImageBinary = imageBinaryCache;
-			if (skippedBlockIds.size > 0) {
-				const skipSet = skippedBlockIds;
-				const filterBlocks = (list: Block[]): Block[] =>
-					list.filter((block) => !skipSet.has(block.block_id));
-				blocks = filterBlocks(blocks);
-				imageBlocks = filterBlocks(imageBlocks);
-				first_level_block_ids = first_level_block_ids.filter((id) => !skipSet.has(id));
-				if (blocks.length === 0) {
-					throw new Error('没有内容可以写入文档');
-				}
+
+		// 并发执行：下载图片 和 创建文档
+		const prepareImagesPromise = (async () => {
+			if (imageBlocks.length > 0) {
+				return await this.prepareImageBlocks(imageBlocks, imageUrlMap);
+			}
+			return {
+				imageBinaryCache: new Map<string, DownloadedImageBinary>(),
+				skippedBlockIds: new Set<string>()
+			};
+		})();
+		const createDocPromise = this.createDoc(title);
+
+		const [{ imageBinaryCache, skippedBlockIds }, documentId] = await Promise.all([
+			prepareImagesPromise,
+			createDocPromise
+		]);
+
+		if (skippedBlockIds.size > 0) {
+			const skipSet = skippedBlockIds;
+			const filterBlocks = (list: Block[]): Block[] =>
+				list.filter((block) => !skipSet.has(block.block_id));
+			blocks = filterBlocks(blocks);
+			imageBlocks = filterBlocks(imageBlocks);
+			first_level_block_ids = first_level_block_ids.filter((id) => !skipSet.has(id));
+			if (blocks.length === 0) {
+				throw new Error('没有内容可以写入文档');
 			}
 		}
 
@@ -771,12 +780,42 @@ export class FeishuDocManager {
 			}
 		}
 
-		const documentId = await this.createDoc(title);
-
 		// 飞书 API 限制单次创建的块数量为 1000，这里进行分批处理
 		const BATCH_LIMIT = 1000;
 		let currentBatchFirstLevelIds: string[] = [];
 		let currentBatchBlocks: Block[] = [];
+
+		const uploadLimit = pLimit(IMAGE_UPLOAD_CONCURRENCY);
+		const imageUploadPromises: Promise<ImageReplacementPayload | null>[] = [];
+
+		const processBatch = async () => {
+			if (currentBatchBlocks.length > 0) {
+				const relations = await this.sendBatch(
+					documentId,
+					currentBatchFirstLevelIds,
+					currentBatchBlocks
+				);
+				recordBlockRelations(relations);
+
+				// 立即触发当前批次中的图片上传
+				for (const block of currentBatchBlocks) {
+					if (block.block_type === 27) {
+						// 27 is Image
+						const binary = imageBinaryCache.get(block.block_id);
+						if (binary) {
+							// 获取真实 Block ID，如果没有则使用临时 ID（通常会有关系映射）
+							const realId = tempBlockIdToRealBlockId.get(block.block_id) ?? block.block_id;
+							imageUploadPromises.push(
+								uploadLimit(() => this.uploadAndGetReplacement(realId, binary, block))
+							);
+						}
+					}
+				}
+
+				currentBatchFirstLevelIds = [];
+				currentBatchBlocks = [];
+			}
+		};
 
 		for (const rootId of first_level_block_ids) {
 			// 如果根块被过滤（例如是图片），则跳过
@@ -788,16 +827,7 @@ export class FeishuDocManager {
 
 			// 如果当前批次加上新的树超过限制，先发送当前批次
 			if (currentBatchBlocks.length + tree.length > BATCH_LIMIT) {
-				if (currentBatchBlocks.length > 0) {
-					const relations = await this.sendBatch(
-						documentId,
-						currentBatchFirstLevelIds,
-						currentBatchBlocks
-					);
-					recordBlockRelations(relations);
-					currentBatchFirstLevelIds = [];
-					currentBatchBlocks = [];
-				}
+				await processBatch();
 
 				// 如果单个树就超过限制，目前只能尝试发送（或者需要更复杂的拆分逻辑）
 				if (tree.length > BATCH_LIMIT) {
@@ -812,22 +842,13 @@ export class FeishuDocManager {
 		}
 
 		// 发送剩余的批次
-		if (currentBatchBlocks.length > 0) {
-			const relations = await this.sendBatch(
-				documentId,
-				currentBatchFirstLevelIds,
-				currentBatchBlocks
-			);
-			recordBlockRelations(relations);
-		}
+		await processBatch();
 
-		await this.handleImageBlocks(
-			documentId,
-			imageBlocks,
-			imageUrlMap,
-			tempBlockIdToRealBlockId,
-			preloadedImageBinary
+		const replacements = (await Promise.all(imageUploadPromises)).filter(
+			(item): item is ImageReplacementPayload => item !== null
 		);
+
+		await this.replaceDocumentImages(documentId, replacements);
 
 		return documentId;
 	}

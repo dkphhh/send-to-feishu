@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { FeishuBitableManager, type BitableFieldsData } from '@/lib/feishu/feishu-bitable';
+	import { FeishuBitableManager, type BitableFieldsData } from '@/lib/feishu/bitable';
 	import { ARTICLE_FIELDS } from '@/lib/const';
 
 	let { form = $bindable() }: { form: BitableFormType } = $props();
@@ -11,17 +11,21 @@
 	}
 </script>
 
+{#snippet getBitableFieldsButton()}
+	<button
+		disabled={!form.appToken || !form.tableId}
+		type="button"
+		class="btn btn-sm btn-neutral"
+		onclick={getBitableFields}
+	>
+		加载多维表格字段
+	</button>
+{/snippet}
+
 <div class="flex flex-col gap-2">
 	<label for="tableId" class="label">匹配多维表格字段</label>
 	{#if !allBitableFields}
-		<button
-			disabled={!form.appToken || !form.tableId}
-			type="button"
-			class="btn btn-sm btn-neutral"
-			onclick={getBitableFields}
-		>
-			加载多维表格字段
-		</button>
+		{@render getBitableFieldsButton()}
 	{:else}
 		{#await allBitableFields}
 			<button disabled type="button" class="btn btn-sm btn-neutral" onclick={getBitableFields}>
@@ -63,6 +67,7 @@
 			<p class="label text-wrap">
 				加载多维表格字段失败：{error instanceof Error ? error.message : '未知错误'}
 			</p>
+			{@render getBitableFieldsButton()}
 		{/await}
 	{/if}
 </div>

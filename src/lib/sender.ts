@@ -1,10 +1,10 @@
 import { getForm } from '../components/forms/forms.svelte';
 import { credentials } from '../components/settings/settings.svelte';
-import { FeishuBitableManager, type BitablePayload } from '@/lib/feishu/feishu-bitable';
+import { FeishuBitableManager, type BitablePayload } from '@/lib/feishu/bitable';
 
-import { FeishuDocManager, type DocPayload } from '@/lib/feishu/feishu-doc';
+import { FeishuDocManager, type DocPayload } from '@/lib/feishu/doc';
 
-import { FeishuSheetManager, type SheetPayload } from '@/lib/feishu/feishu-sheet';
+import { FeishuSheetManager, type SheetPayload } from '@/lib/feishu/sheet';
 import { getCurrentTabContent } from './utils';
 import { extractWebArticle } from './extract';
 

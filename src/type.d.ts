@@ -169,7 +169,7 @@ declare global {
 
 	type FormTypeName = FormType['formType'];
 	type EditMode = 'create' | 'edit';
-	type PageType = 'index' | 'settings' | 'formList' | 'formEdit';
+	type PageType = 'index' | 'settings' | 'formList' | 'formEdit' | "formCreate";
 }
 
 export {};

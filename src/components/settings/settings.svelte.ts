@@ -1,5 +1,5 @@
-import { createFeishuTokenManager, FeishuToken } from '@/lib/feishu/feishu-token-manager';
-import { FeishuConfigError } from '@/lib/feishu/feishu-token-manager';
+import { createFeishuTokenManager, FeishuToken } from '@/lib/feishu/credential-token-manager';
+import { FeishuConfigError } from '@/lib/feishu/credential-token-manager';
 class Credentials {
 	/**
 	 * 飞书应用的 App ID。
