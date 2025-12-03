@@ -39,7 +39,7 @@
 	<button type="button" class="btn mt-4 rounded btn-sm" onclick={parseFolderUrl}>解析链接</button>
 	{#snippet footer()}
 		<div class=" flex flex-row gap-4">
-			<StepButton isDisable={false} onclick={onPre} description="上一步" />
+			<StepButton isDisable={true} onclick={onPre} description="上一步" />
 			<StepButton isDisable={!form.folderToken} onclick={onNext} description="下一步" />
 		</div>
 	{/snippet}

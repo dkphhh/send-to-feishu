@@ -1,5 +1,5 @@
 <script lang="ts">
-	import SaveArticle from './step/SaveArticle.svelte';
+	import SheetSaveArticleStep from './step/SheetSaveArticleStep.svelte';
 	import SheetName from './step/SheetName.svelte';
 	import FieldSelectorStep from '@/components/forms/sheet/step/FieldSelectorStep.svelte';
 	import ParseUrl from './step/ParseUrl.svelte';
@@ -22,7 +22,7 @@
 	let currentStepIndex = $state(0);
 
 	const stepsComponents = [
-		SaveArticle,
+		SheetSaveArticleStep,
 		ParseUrl,
 		WorkSheetSelector,
 		FieldSelectorStep,

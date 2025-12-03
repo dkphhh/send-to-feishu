@@ -1,14 +1,15 @@
 <script lang="ts">
-	import { gotoPage } from '@/lib/utils';
 	import { allForms } from '../../forms.svelte';
-	let { form = $bindable() }: { form: BitableFormType } = $props();
+	import { gotoPage } from '@/lib/utils';
+
+	let { form = $bindable() }: { form: SheetFormType } = $props();
 	const docForms = $derived(allForms.filter((f) => f.formType === '飞书文档'));
 	let selectedDocFormId = $state<string | undefined>();
 </script>
 
 <select
-	class="select"
 	id="linkDocForm"
+	class="select"
 	onchange={() => {
 		form.linkDocFormId = selectedDocFormId;
 	}}

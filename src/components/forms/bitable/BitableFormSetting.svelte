@@ -1,6 +1,7 @@
 <script lang="ts">
 	import FormSettingLayout from '@/components/layout/FormSettingLayout.svelte';
 	import BitableArticleFieldMatch from './step/BitableArticleFieldMatch.svelte';
+	import BitableSaveArticle from './step/BitableSaveArticle.svelte';
 	let { form }: { form: BitableFormType } = $props();
 	let isComplete = $derived(!!form.appToken && !!form.tableId && !!form.name);
 </script>
@@ -9,8 +10,6 @@
 	{#snippet title()}
 		<span class="mx-1 badge badge-sm badge-neutral">多维表格</span>
 	{/snippet}
-
-
 
 	<!-- 配置名称 -->
 	<label for="name" class="label">配置名称</label>
@@ -22,6 +21,10 @@
 		placeholder="配置名称"
 		bind:value={form.name}
 	/>
+
+	<!-- 是否和飞书文档关联 -->
+	<label for="linkDocForm" class="label">App Token</label>
+	<BitableSaveArticle bind:form />
 
 	<!-- App Token -->
 	<label for="appToken" class="label">App Token</label>

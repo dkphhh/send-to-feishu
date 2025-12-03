@@ -1,6 +1,7 @@
 <script lang="ts">
 	import FormSettingLayout from '@/components/layout/FormSettingLayout.svelte';
 	import FieldSelector from '@/components/forms/sheet/step/FieldSelector.svelte';
+	import SheetSaveArticle from './step/SheetSaveArticle.svelte';
 	let { form }: { form: SheetFormType } = $props();
 	let isComplete = $derived(
 		!!form.sheetToken && !!form.sheetId && !!form.name && form.fields.length > 0
@@ -24,6 +25,10 @@
 			bind:value={form.name}
 		/>
 	</div>
+
+	<!-- 是否和飞书文档关联 -->
+	<label for="linkDocForm" class="label">App Token</label>
+	<SheetSaveArticle bind:form />
 
 	<!-- Sheet Token -->
 	<div>

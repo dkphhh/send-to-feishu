@@ -38,12 +38,11 @@
 
 		try {
 			await deleteForm(form);
+			gotoPage('formList');
 			alert('删除成功');
-			gotoPage('formList');
 		} catch (error) {
-			console.error(error);
-			alert('删除失败：' + (error instanceof Error ? error.message : '未知错误'));
 			gotoPage('formList');
+			alert('删除失败：' + (error instanceof Error ? error.message : '未知错误'));
 		}
 	}
 </script>

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import BitableSaveArticle from './step/BitableSaveArticle.svelte';
+	import BitableSaveArticleStep from './step/BitableSaveArticleStep.svelte';
 	import BitableParseUrl from './step/BitableParseUrl.svelte';
 	import BitableTableSelector from './step/BitableTableSelector.svelte';
 	import BitableFieldMatchStep from './step/BitableFieldMatchStep.svelte';
@@ -25,7 +25,7 @@
 	let currentStepIndex = $state(0);
 
 	const stepsComponents = [
-		BitableSaveArticle,
+		BitableSaveArticleStep,
 		BitableParseUrl,
 		BitableTableSelector,
 		BitableFieldMatchStep,

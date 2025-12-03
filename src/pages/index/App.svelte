@@ -6,7 +6,7 @@
 	import { sendToFeishu } from '@/lib/sender';
 	import OnInstallGuide from '@/components/settings/OnInstallGuide.svelte';
 	import SuccessNotification from '@/components/SuccessNotification.svelte';
-
+	import CreateFormButton from '@/components/forms/CreateFormButton.svelte';
 	let resultUrl: string = $state('');
 	let isLoading: boolean = $state(false);
 </script>
@@ -47,12 +47,17 @@
 <Layout>
 	{#if credentials.isValid}
 		<div class="flex flex-col items-center gap-4">
-			<ul class="list w-full rounded-box border border-base-300 bg-base-100 shadow-md">
-				<li class="p-4 pb-2 text-sm font-semibold tracking-wide opacity-60">选择保存方案</li>
-				{#each allForms as form (form.id)}
-					{@render listItem(form)}
-				{/each}
-			</ul>
+			{#if allForms.length === 0}
+				<div class="mt-4 text-sm font-semibold opacity-60">点击下方按钮新建配置⬇️</div>
+				<CreateFormButton />
+			{:else}
+				<ul class="list w-full rounded-box border border-base-300 bg-base-100 shadow-md">
+					<li class="p-4 pb-2 text-sm font-semibold tracking-wide opacity-60">选择保存方案</li>
+					{#each allForms as form (form.id)}
+						{@render listItem(form)}
+					{/each}
+				</ul>
+			{/if}
 		</div>
 	{:else}
 		<OnInstallGuide />
