@@ -1,8 +1,10 @@
 <script lang="ts">
 	import StepLayout from './SheetStepLayout.svelte';
+	import StepButton from '@/components/layout/StepButton.svelte';
+
 	import { setForm } from '../../forms.svelte';
 	import { gotoPage } from '@/lib/utils';
-	let { form = $bindable() }: { form: SheetFormType } = $props();
+	let { form = $bindable(), onPre }: { form: SheetFormType; onPre: () => void } = $props();
 
 	let isComplete = $derived(
 		!!form.sheetToken && !!form.sheetId && !!form.name && form.fields.length > 0
@@ -19,6 +21,9 @@
 		bind:value={form.name}
 	/>
 	{#snippet footer()}
+		<div class=" flex flex-row gap-4"></div>
+		<StepButton isDisable={false} description="上一步" onclick={onPre} />
+
 		<button
 			class="btn rounded-2xl btn-primary"
 			disabled={!isComplete}

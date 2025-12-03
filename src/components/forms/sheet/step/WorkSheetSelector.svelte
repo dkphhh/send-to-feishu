@@ -1,5 +1,5 @@
 <script lang="ts">
-	import StepButton from '../../../layout/StepButton.svelte';
+	import StepButton from '@/components/layout/StepButton.svelte';
 	import StepLayout from './SheetStepLayout.svelte';
 	import { FeishuSheetManager } from '@/lib/feishu/sheet';
 	let {
@@ -22,28 +22,14 @@
 		<span class="loading loading-sm loading-spinner"></span>
 	{:then ws}
 		{@const chosenSheet = ws.find((s) => s.sheet_id === form.sheetId)}
-		<div class="dropdown dropdown-center">
-			<div tabindex="0" role="button" class="btn m-1 w-32 btn-sm">
-				{chosenSheet ? `已选择：${chosenSheet.title}` : '选择工作表 ⬇️'}
-			</div>
-			<ul
-				tabindex="-1"
-				class="dropdown-content menu z-1 w-32 gap-2 rounded-box bg-base-100 p-2 shadow-sm"
-			>
-				{#each ws as s (s.sheet_id)}
-					<li>
-						<button
-							onclick={() => {
-								form.sheetId = s.sheet_id;
-							}}
-							class="btn w-full rounded-2xl btn-ghost btn-sm">{s.title}</button
-						>
-					</li>
-				{/each}
-			</ul>
-		</div>
+		<select class="select" bind:value={form.sheetId}>
+			<option disabled selected>选择工作表</option>
+			{#each ws as s (s.sheet_id)}
+				<option value={s.sheet_id}>{s.title}</option>
+			{/each}
+		</select>
 		{#if chosenSheet}
-			<p class="label mt-2">已选择工作表：{chosenSheet?.title}</p>
+			<p class="label mt-2">已选择工作表：{chosenSheet.title}</p>
 		{/if}
 	{/await}
 	{#snippet footer()}

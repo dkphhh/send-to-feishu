@@ -1,6 +1,6 @@
 <script lang="ts">
 	import SaveArticle from './step/SaveArticle.svelte';
-	import Name from './step/Name.svelte';
+	import SheetName from './step/SheetName.svelte';
 	import FieldSelectorStep from '@/components/forms/sheet/step/FieldSelectorStep.svelte';
 	import ParseUrl from './step/ParseUrl.svelte';
 	import SetStartIndex from './step/SetStartIndex.svelte';
@@ -27,7 +27,7 @@
 		WorkSheetSelector,
 		FieldSelectorStep,
 		SetStartIndex,
-		Name
+		SheetName
 	];
 
 	function next() {

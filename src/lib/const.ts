@@ -23,4 +23,18 @@ export const SHEET_STEP_TITLES = [
 	'起个名字'
 ] as const;
 
-export  type SheetStep = (typeof SHEET_STEP_TITLES)[number];
+export type SheetStep = (typeof SHEET_STEP_TITLES)[number];
+
+export const BITABLE_STEP_TITLES = [
+	'保存文章吗？',
+	'填写多维表格链接',
+	'选择数据表',
+	'选择字段映射',
+	'起个名字'
+];
+
+export type BitableStep = (typeof BITABLE_STEP_TITLES)[number];
+
+export const DOC_STEP_TITLES = ['填写文件夹链接', '起个名字'];
+
+export type DocStep = (typeof DOC_STEP_TITLES)[number];

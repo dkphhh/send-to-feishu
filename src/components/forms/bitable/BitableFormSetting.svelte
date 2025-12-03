@@ -1,6 +1,6 @@
 <script lang="ts">
 	import FormSettingLayout from '@/components/layout/FormSettingLayout.svelte';
-	import BitableArticleFieldMatch from './BitableArticleFieldMatch.svelte';
+	import BitableArticleFieldMatch from './step/BitableArticleFieldMatch.svelte';
 	let { form }: { form: BitableFormType } = $props();
 	let isComplete = $derived(!!form.appToken && !!form.tableId && !!form.name);
 </script>

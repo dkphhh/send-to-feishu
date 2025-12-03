@@ -1,7 +1,7 @@
 <script lang="ts">
 	import FieldSelector from './FieldSelector.svelte';
 	import StepLayout from './SheetStepLayout.svelte';
-	import StepButton from '../../../layout/StepButton.svelte';
+	import StepButton from '@/components/layout/StepButton.svelte';
 
 	let {
 		form = $bindable(),

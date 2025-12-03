@@ -1,5 +1,5 @@
 <script lang="ts">
-	import StepButton from '../../../layout/StepButton.svelte';
+	import StepButton from '@/components/layout/StepButton.svelte';
 	import StepLayout from './SheetStepLayout.svelte';
 	import { FeishuSheetManager } from '@/lib/feishu/sheet';
 	let {

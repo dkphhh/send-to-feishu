@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { ARTICLE_FIELDS } from '@/lib/const';
-
+	import { getCurrentPath, getPagePath } from '@/lib/utils';
 	let { form = $bindable() }: { form: SheetFormType } = $props();
 	const allFields = Object.keys(ARTICLE_FIELDS).filter((f) => {
 		if (f === 'feishuDocUrl' && !form.linkDocFormId) {
@@ -37,10 +37,11 @@
 </script>
 
 <div class="flex w-80 flex-col gap-2">
-	<!-- <div class="label">
-		<span class="label-text">保存字段</span>
-	</div> -->
-
+	{#if getCurrentPath() == getPagePath('formEdit')}
+		<div class="label">
+			<span class="label-text">保存字段</span>
+		</div>
+	{/if}
 	<!-- Selected Fields List -->
 	<div class="flex w-full flex-col gap-2">
 		{#each fields as field, index (field)}

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { FeishuBitableManager, type BitableFieldsData } from '@/lib/feishu/bitable';
 	import { ARTICLE_FIELDS } from '@/lib/const';
-
+	import { getCurrentPath, getPagePath } from '@/lib/utils';
 	let { form = $bindable() }: { form: BitableFormType } = $props();
 
 	let allBitableFields: Promise<BitableFieldsData['items']> | undefined = $state();
@@ -9,6 +9,13 @@
 	function getBitableFields() {
 		allBitableFields = FeishuBitableManager.getBitableFields(form.appToken, form.tableId);
 	}
+
+	const visibleFields = Object.keys(ARTICLE_FIELDS).filter((f) => {
+		if (f === 'feishuDocUrl' && !form.linkDocFormId) {
+			return false;
+		}
+		return true;
+	}) as (keyof typeof ARTICLE_FIELDS)[];
 </script>
 
 {#snippet getBitableFieldsButton()}
@@ -23,7 +30,10 @@
 {/snippet}
 
 <div class="flex flex-col gap-2">
-	<label for="tableId" class="label">匹配多维表格字段</label>
+	{#if getCurrentPath() == getPagePath('formEdit')}
+		<label for="tableId" class="label">匹配多维表格字段</label>
+	{/if}
+
 	{#if !allBitableFields}
 		{@render getBitableFieldsButton()}
 	{:else}
@@ -33,27 +43,27 @@
 			</button>
 		{:then bitableFields}
 			<div class="flex flex-col gap-2">
-				{#each Object.keys(ARTICLE_FIELDS) as field (field)}
-					{@const f = field as FetchedArticleField}
-					<label for={f} class="select">
-						<span class="label w-30">{ARTICLE_FIELDS[f]}</span>
+				{#each visibleFields as field (field)}
+					{@const fieldsMap = form.fieldsMap as BitableFieldsMapWithDoc}
+					<label for={field} class="select">
+						<span class="label w-30">{ARTICLE_FIELDS[field]}</span>
 						<select
-							value={form.fieldsMap[f]?.name || ''}
+							value={fieldsMap[field]?.name || ''}
 							onchange={(e) => {
 								const selectedName = e.currentTarget.value;
 								if (!selectedName) {
-									form.fieldsMap[f] = undefined;
+									fieldsMap[field] = undefined;
 								} else {
 									const selectedField = bitableFields.find((bf) => bf.field_name === selectedName);
 									if (selectedField) {
-										form.fieldsMap[f] = {
+										fieldsMap[field] = {
 											name: selectedField.field_name,
 											type: selectedField.type
 										};
 									}
 								}
 							}}
-							id={f}
+							id={field}
 						>
 							<option value="">不保存</option>
 							{#each bitableFields as bf (bf.field_id)}

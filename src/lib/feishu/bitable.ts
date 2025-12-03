@@ -56,6 +56,53 @@ export class FeishuBitableManager {
 	}
 
 	/**
+	 * TODO: 确认实现是否正确
+	 * 获取多维表格的所有数据表
+	 * 参考：https://open.feishu.cn/document/server-docs/docs/bitable-v1/app-table/list
+	 * @param appToken
+	 * @returns
+	 */
+	static async getBitableTables(appToken: string) {
+		if (!credentials.tokenManager) {
+			throw new Error('未找到有效的凭据');
+		}
+
+		const url = `https://open.feishu.cn/open-apis/bitable/v1/apps/${appToken}/tables?page_size=100`;
+
+		
+		const headers = {
+			Authorization: `Bearer ${await credentials.tokenManager.getToken()}`,
+			'Content-Type': 'application/json; charset=utf-8'
+		};
+
+		const res = await fetch(url, {
+			method: 'GET',
+			headers
+		});
+
+		if (!res.ok) {
+			throw new Error(`请求飞书多维表格接口失败，${await res.text()}`);
+		}
+
+		const resData: FeishuApiResponse<{
+			has_more: boolean;
+			page_token?: string;
+			total: number;
+			items: Array<{
+				table_id: string;
+				name: string;
+				revision: number;
+			}>;
+		}> = await res.json();
+
+		if (resData.code !== 0) {
+			throw new Error(`飞书多维表格接口报错：${resData.msg}`);
+		}
+
+		return resData.data.items;
+	}
+
+	/**
 	 *  获取多维表格的字段列表
 	 * 参考：https://open.feishu.cn/document/server-docs/docs/bitable-v1/app-table-field/list
 	 * @param appToken
