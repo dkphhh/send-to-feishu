@@ -26,7 +26,6 @@
 				onclick={async () => {
 					try {
 						await setForm(form);
-						alert('配置已创建成功！');
 					} catch (e) {
 						alert(`创建配置失败：${(e as Error).message}`);
 						return;
