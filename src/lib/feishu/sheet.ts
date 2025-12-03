@@ -123,7 +123,11 @@ export class FeishuSheetManager {
 		return token;
 	}
 
-	static getPayload(fields: FetchedArticleField[], articleData: FetchedArticle): SheetPayload {
+	static getPayload(
+		fields: Array<FetchedArticleField | 'feishuDocUrl'>,
+		articleData: FetchedArticle,
+		feishuDocUrl?: string
+	): SheetPayload {
 		const payload: SheetPayload = [[]];
 		for (const field of fields) {
 			switch (field) {
@@ -148,16 +152,24 @@ export class FeishuSheetManager {
 					break;
 				case 'title':
 					payload[0].push(articleData.title || '');
-					break;
+					break; 
 				case 'url':
 					if (articleData.url) {
-						payload[0].push({ text: articleData.url, link: articleData.url, type: 'url' });
+						payload[0].push({ text: '原文链接', link: articleData.url, type: 'url' });
+					} else {
+						payload[0].push('');
+					}
+					break;
+				case 'feishuDocUrl':
+					if (feishuDocUrl) {
+						payload[0].push({ text: '飞书文档链接', link: feishuDocUrl, type: 'url' });
 					} else {
 						payload[0].push('');
 					}
 					break;
 			}
 		}
+
 		return payload;
 	}
 

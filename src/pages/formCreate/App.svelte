@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Layout from '@/components/layout/Layout.svelte';
-	import SheetFormSetting from '@/components/forms/sheet/SheetFormSetting.svelte';
+	import SheetFormCreate from '@/components/forms/sheet/SheetFormCreate.svelte';
 	import BitableFormSetting from '@/components/forms/bitable/BitableFormSetting.svelte';
 	import DocFormSetting from '@/components/forms/feishuDoc/DocFormSetting.svelte';
 
@@ -37,7 +37,8 @@
 						description: undefined,
 						published: undefined,
 						source: undefined,
-						url: undefined
+						url: undefined,
+						feishuDocUrl: undefined
 					}
 				};
 			}
@@ -59,7 +60,7 @@
 
 <Layout>
 	{#if formTypeName == '电子表格'}
-		<SheetFormSetting form={createForm as SheetFormType} />
+		<SheetFormCreate />
 	{:else if formTypeName == '多维表格'}
 		<BitableFormSetting form={createForm as BitableFormType} />
 	{:else if formTypeName == '飞书文档'}

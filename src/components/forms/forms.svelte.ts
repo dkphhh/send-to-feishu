@@ -24,15 +24,6 @@ export async function setForm(form: FormType) {
 	} else {
 		// 2. 新增项
 		// 推入全局数组
-		//
-
-		if (form.formType == '电子表格') {
-			if (form.rangeIndex.startIndex === '' || form.rangeIndex.endIndex === '') {
-				form.rangeIndex.startIndex = 'A';
-				form.rangeIndex.endIndex = 'Z';
-			}
-		}
-
 		allForms.push(form);
 	}
 

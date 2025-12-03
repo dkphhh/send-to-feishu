@@ -12,7 +12,6 @@
 	},
 	"devDependencies": {
 		"@crxjs/vite-plugin": "^2.2.1",
-		"@efstajas/svelte-stepper": "^0.2.2",
 		"@eslint/compat": "^2.0.0",
 		"@extractus/article-extractor": "^8.0.20",
 		"@sveltejs/vite-plugin-svelte": "^6.2.1",

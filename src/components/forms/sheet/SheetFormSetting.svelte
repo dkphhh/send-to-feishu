@@ -1,6 +1,6 @@
 <script lang="ts">
 	import FormSettingLayout from '@/components/layout/FormSettingLayout.svelte';
-	import SheetFieldSelector from '@/components/forms/sheet/step/FieldSelector.svelte';
+	import FieldSelector from '@/components/forms/sheet/step/FieldSelector.svelte';
 	let { form }: { form: SheetFormType } = $props();
 	let isComplete = $derived(
 		!!form.sheetToken && !!form.sheetId && !!form.name && form.fields.length > 0
@@ -85,5 +85,5 @@
 	</div>
 
 	<!-- 字段选择 -->
-	<SheetFieldSelector bind:form />
+	<FieldSelector bind:form />
 </FormSettingLayout>

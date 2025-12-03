@@ -135,13 +135,78 @@ export async function sendToFeishu(formId: string): Promise<string> {
 
 	switch (form.formType) {
 		case '电子表格': {
-			const payload: SheetPayload = FeishuSheetManager.getPayload(form.fields, articleData);
-			console.log('Sheet payload:', payload);
-			return await sendToFeishuSheet(formId, payload);
+			// 确认是否有关联的文档配置 id
+			if (!form.linkDocFormId) {
+				// 如果没有，直接发送到电子表格
+				const payload: SheetPayload = FeishuSheetManager.getPayload(form.fields, articleData);
+				console.log('Sheet payload:', payload);
+				return await sendToFeishuSheet(formId, payload);
+			} else {
+				// 如果有，先发送到飞书文档，再把文档链接发送到电子表格
+				const docForm = getForm(form.linkDocFormId);
+
+				if (!docForm) {
+					throw new Error('链接的文档表单未找到');
+				}
+				if (docForm.formType !== '飞书文档') {
+					throw new Error('链接的文档表单类型错误');
+				}
+				// 创建文档
+				const { content, ...rest } = articleData;
+				const docUrl = await sendToFeishuDoc(
+					docForm.id,
+					{
+						title: articleData.title,
+						content
+					},
+					rest
+				);
+
+				// 再向表格中添加内容
+				const payload: SheetPayload = FeishuSheetManager.getPayload(
+					form.fields,
+					articleData,
+					docUrl
+				);
+				return await sendToFeishuSheet(formId, payload);
+			}
 		}
 		case '多维表格': {
-			const payload: BitablePayload = FeishuBitableManager.getPayload(form.fieldsMap, articleData);
-			return await sendToFeishuBitable(formId, payload);
+			if (!form.linkDocFormId) {
+				const payload: BitablePayload = FeishuBitableManager.getPayload(
+					form.fieldsMap,
+					articleData
+				);
+				return await sendToFeishuBitable(formId, payload);
+			} else {
+				const docForm = getForm(form.linkDocFormId);
+
+				if (!docForm) {
+					throw new Error('链接的文档表单未找到');
+				}
+				if (docForm.formType !== '飞书文档') {
+					throw new Error('链接的文档表单类型错误');
+				}
+				// 创建文档
+				const { content, ...rest } = articleData;
+				const docUrl = await sendToFeishuDoc(
+					docForm.id,
+					{
+						title: articleData.title,
+						content
+					},
+					rest
+				);
+
+				// 再向多维表格中添加内容
+				const modifiedArticleData = { ...articleData, feishuDocUrl: docUrl };
+				const payload: BitablePayload = FeishuBitableManager.getPayload(
+					form.fieldsMap,
+					modifiedArticleData
+				);
+
+				return await sendToFeishuBitable(formId, payload);
+			}
 		}
 		case '飞书文档': {
 			const { content, ...rest } = articleData;
@@ -150,59 +215,6 @@ export async function sendToFeishu(formId: string): Promise<string> {
 				content
 			};
 			return await sendToFeishuDoc(formId, payload as DocPayload, rest);
-		}
-		case '联动配置': {
-			const linkForm = getForm(form.linkFormId);
-			const docForm = getForm(form.docFormId);
-
-			if (!linkForm || !docForm) {
-				throw new Error('联动配置中的表单未找到');
-			}
-
-			if (docForm.formType !== '飞书文档') {
-				throw new Error('联动配置中的文档表单类型错误');
-			}
-
-			// 先创建文档
-			const { content, ...rest } = articleData;
-			const docUrl = await sendToFeishuDoc(
-				docForm.id,
-				{
-					title: articleData.title,
-					content
-				},
-				rest
-			);
-
-			// 再在表格中添加内容
-
-			switch (linkForm.formType) {
-				case '多维表格': {
-					// 将文章中的 URL 字段替换为文档链接
-					const modifiedArticleData = { ...articleData, url: docUrl };
-					const payload: BitablePayload = FeishuBitableManager.getPayload(
-						linkForm.fieldsMap,
-						modifiedArticleData
-					);
-
-					return await sendToFeishuBitable(linkForm.id, payload);
-				}
-				case '电子表格': {
-					const payload: SheetPayload = [
-						[
-							articleData.title,
-							{
-								text: articleData.url,
-								link: docUrl,
-								type: 'url'
-							}
-						]
-					];
-					return await sendToFeishuSheet(linkForm.id, payload);
-				}
-				default:
-					throw new Error('联动配置中的链接表单类型错误');
-			}
 		}
 
 		default:

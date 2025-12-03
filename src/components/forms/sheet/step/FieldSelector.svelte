@@ -1,12 +1,18 @@
 <script lang="ts">
 	import { ARTICLE_FIELDS } from '@/lib/const';
-	import Step from './Step.svelte';
-	import NextStepButton from '../../NextStepButton.svelte';
 
 	let { form = $bindable() }: { form: SheetFormType } = $props();
+	const allFields = Object.keys(ARTICLE_FIELDS).filter((f) => {
+		if (f === 'feishuDocUrl' && !form.linkDocFormId) {
+			return false;
+		}
+		return true;
+	});
 	let fields = $derived(form.fields);
 	let availableFields = $derived(
-		(Object.keys(ARTICLE_FIELDS) as FetchedArticleField[]).filter((f) => !fields.includes(f))
+		(Object.keys(ARTICLE_FIELDS) as FetchedArticleField[]).filter(
+			(f) => !fields.includes(f) && allFields.includes(f)
+		)
 	);
 
 	function addField(field: FetchedArticleField) {
@@ -30,76 +36,69 @@
 	}
 </script>
 
-<div class="flex flex-col items-center justify-center">
-	<Step currentStep="选择字段" />
-	<div class="my-4 flex flex-col items-center justify-center gap-2">
-		<p>选择需要保存的字段</p>
-		<div class="flex flex-col gap-2">
-			<div class="label">
-				<span class="label-text">保存字段</span>
-			</div>
+<div class="flex w-80 flex-col gap-2">
+	<!-- <div class="label">
+		<span class="label-text">保存字段</span>
+	</div> -->
 
-			<!-- Selected Fields List -->
-			<div class="flex flex-col gap-2">
-				{#each fields as field, index (field)}
-					<div
-						class="flex items-center justify-between rounded-md border border-base-300 bg-base-100 p-2 shadow-md"
+	<!-- Selected Fields List -->
+	<div class="flex w-full flex-col gap-2">
+		{#each fields as field, index (field)}
+			<div
+				class="flex items-center justify-between rounded-md border border-base-300 bg-base-100 p-2 shadow-md"
+			>
+				<span class="font-medium">{ARTICLE_FIELDS[field]}</span>
+				<div class="flex gap-1">
+					<button
+						class="btn btn-square btn-ghost"
+						onclick={() => moveField(index, 'up')}
+						disabled={index === 0}
+						aria-label="上移"
+						title="上移"
 					>
-						<span class="font-medium">{ARTICLE_FIELDS[field]}</span>
-						<div class="flex gap-1">
-							<button
-								class="btn btn-square btn-ghost"
-								onclick={() => moveField(index, 'up')}
-								disabled={index === 0}
-								aria-label="上移"
-								title="上移"
-							>
-								⬆️
-							</button>
-							<button
-								class="btn btn-square btn-ghost"
-								onclick={() => moveField(index, 'down')}
-								disabled={index === fields.length - 1}
-								aria-label="下移"
-								title="下移"
-							>
-								⬇️
-							</button>
-							<button
-								class="btn btn-square text-error btn-ghost btn-error"
-								onclick={() => removeField(index)}
-								aria-label="删除"
-								title="删除"
-							>
-								🗑️
-							</button>
-						</div>
-					</div>
-				{/each}
-				{#if fields.length === 0}
-					<div
-						class="rounded-md border border-dashed border-base-300 p-4 text-center text-sm text-base-content/50"
+						⬆️
+					</button>
+					<button
+						class="btn btn-square btn-ghost"
+						onclick={() => moveField(index, 'down')}
+						disabled={index === fields.length - 1}
+						aria-label="下移"
+						title="下移"
 					>
-						未选择任何字段，请从下方添加
-					</div>
-				{/if}
-			</div>
-
-			<!-- Add Field Section -->
-			{#if availableFields.length > 0}
-				<div class="mt-2 flex flex-wrap gap-2">
-					{#each availableFields as field (field)}
-						<button
-							class="btn border-dashed btn-outline btn-sm btn-neutral"
-							onclick={() => addField(field)}
-						>
-							➕
-							{ARTICLE_FIELDS[field]}
-						</button>
-					{/each}
+						⬇️
+					</button>
+					<button
+						class="btn btn-square text-error btn-ghost btn-error"
+						onclick={() => removeField(index)}
+						aria-label="删除"
+						title="删除"
+					>
+						🗑️
+					</button>
 				</div>
-			{/if}
-		</div>
+			</div>
+		{/each}
+		{#if fields.length === 0}
+			<div
+				class="rounded-md border border-dashed border-base-300 p-4 text-center text-sm text-base-content/50"
+			>
+				未选择任何字段，请从下方添加
+			</div>
+		{/if}
 	</div>
-	<NextStepButton isDisable={!form.fields} />
+
+	<!-- Add Field Section -->
+	{#if availableFields.length > 0}
+		<div class="mt-2 flex w-full flex-wrap gap-2">
+			{#each availableFields as field (field)}
+				<button
+					class="btn border-dashed btn-outline btn-sm btn-neutral"
+					onclick={() => addField(field)}
+				>
+					➕
+					{ARTICLE_FIELDS[field]}
+				</button>
+			{/each}
+		</div>
+	{/if}
 </div>

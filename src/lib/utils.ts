@@ -35,6 +35,16 @@ export function getPagePath(
 	return chrome.runtime.getURL(`/src/pages/${page}/index.html?${params.toString()}`);
 }
 
+/**
+ *
+ * page 为 "index" | "settings" | "formList" 时，不接受参数 searchParams
+ * page 为 "formEdit" 时 searchParams 的 type 和 formId 都必须填写
+ * page 为  formCreate 时，searchParams 只需要填写 type
+ *
+ * @param page
+ * @param searchParams
+ * @returns
+ */
 export function gotoPage(
 	page: PageType,
 	searchParams?: {

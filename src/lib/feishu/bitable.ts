@@ -102,7 +102,7 @@ export class FeishuBitableManager {
 	 */
 	static getPayload(
 		fieldsMap: BitableFormType['fieldsMap'],
-		articleData: FetchedArticle
+		articleData: FetchedArticle & { feishuDocUrl?: string }
 	): BitablePayload {
 		const payload: BitablePayload = {};
 
@@ -117,7 +117,11 @@ export class FeishuBitableManager {
 			if (value !== undefined && value.trim() !== '') {
 				if (articleField === 'url' && bitableField.type === 15) {
 					// 链接字段，且多维表格字段类型为链接类型
-					payload[bitableField.name] = { link: value, text: value };
+					payload[bitableField.name] = { link: value, text: '原文链接' };
+					return;
+				} else if (articleField === 'feishuDocUrl' && bitableField.type === 15) {
+					// 飞书文档链接字段，且多维表格字段类型为链接类型
+					payload[bitableField.name] = { link: value, text: '飞书文档链接' };
 					return;
 				} else if (articleField === 'published' && bitableField.type === 5) {
 					// 时间字段，且多维表格对应字段也是时间格式，转化为时间戳

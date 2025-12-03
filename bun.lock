@@ -9,7 +9,6 @@
       },
       "devDependencies": {
         "@crxjs/vite-plugin": "^2.2.1",
-        "@efstajas/svelte-stepper": "^0.2.2",
         "@eslint/compat": "^2.0.0",
         "@extractus/article-extractor": "^8.0.20",
         "@sveltejs/vite-plugin-svelte": "^6.2.1",
@@ -41,8 +40,6 @@
   },
   "packages": {
     "@crxjs/vite-plugin": ["@crxjs/vite-plugin@2.2.1", "", { "dependencies": { "@rollup/pluginutils": "^4.1.2", "@webcomponents/custom-elements": "^1.5.0", "acorn-walk": "^8.2.0", "cheerio": "^1.0.0-rc.10", "convert-source-map": "^1.7.0", "debug": "^4.3.3", "es-module-lexer": "^0.10.0", "fast-glob": "^3.2.11", "fs-extra": "^10.0.1", "jsesc": "^3.0.2", "magic-string": "^0.30.12", "pathe": "^2.0.1", "picocolors": "^1.1.1", "react-refresh": "^0.13.0", "rollup": "2.79.2", "rxjs": "7.5.7" } }, "sha512-SrQY/npF0BNc34DKzA34lHC+aQNlMqbiwoRyzr8EGWngmApwuOAGLHzmGVWIfE8rJmu+TsFC8mKFG4LqLM2+hA=="],
-
-    "@efstajas/svelte-stepper": ["@efstajas/svelte-stepper@0.2.2", "", { "dependencies": { "esm-env": "^1.0.0" }, "peerDependencies": { "svelte": "^4.0.0" } }, "sha512-CfNylwqvzrONLdL8CpQrK5C6BSm8yvSpw18d0zIEEGAnVkqCiGX7zLHeV1VCCqbKp/0AsMZgp3zC4U6ggs5MmA=="],
 
     "@esbuild/aix-ppc64": ["@esbuild/aix-ppc64@0.25.12", "", { "os": "aix", "cpu": "ppc64" }, "sha512-Hhmwd6CInZ3dwpuGTF8fJG6yoWmsToE+vYgD4nytZVxcu1ulHpUQRAB1UJ8+N1Am3Mz4+xOByoQoSZf4D+CpkA=="],
 

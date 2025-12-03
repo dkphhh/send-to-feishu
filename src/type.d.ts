@@ -70,38 +70,38 @@ declare global {
 
 	type SheetRangeIndex = { startIndex: string; endIndex: string };
 
-	type SheetFormType = {
-		/**
-		 *  配置 id
-		 */
+	type SheetFormTypeBase = {
 		id: string;
-		/**
-		 *  配置名称
-		 */
 		name: string;
-		/**
-		 * 表单类型名称
-		 */
 		formType: '电子表格';
-		/**
-		 * 电子表格的 token。
-		 */
 		sheetToken: string;
-		/**
-		 * 电子表格工作表的 ID。
-		 */
 		sheetId: string;
-		/**
-		 * 电子表格工作表的范围索引。
-		 */
 		rangeIndex: SheetRangeIndex;
-		/**
-		 * 包含的字段
-		 */
 		fields: FetchedArticleField[];
 	};
 
-	type BitableFormType = {
+	type SheetFormWithDoc = SheetFormTypeBase & {
+		linkDocFormId: string;
+		fields: (FetchedArticleField | 'feishuDocUrl')[];
+	};
+
+	type SheetFormWithoutDoc = SheetFormTypeBase & {
+		linkDocFormId?: undefined;
+	};
+
+	type SheetFormType = SheetFormWithDoc | SheetFormWithoutDoc;
+
+	type BitableFieldsMapWithoutDoc = Record<
+		FetchedArticleField,
+		{ name: string; type: number } | undefined
+	>;
+
+	type BitableFieldsMapWithDoc = Record<
+		FetchedArticleField | 'feishuDocUrl',
+		{ name: string; type: number } | undefined
+	>;
+
+	type BitableFormBase = {
 		/**
 		 *  配置 id
 		 */
@@ -122,13 +122,22 @@ declare global {
 		 * 多维表格的数据表的 ID。
 		 */
 		tableId: string;
-		/**
-		 * 包含的字段映射关系
-		 * key: 抓取的文章字段
-		 * value: 飞书多维表格的字段，{name: string, type: number} 形式
-		 */
-		fieldsMap: Record<FetchedArticleField, { name: string; type: number } | undefined>;
 	};
+
+	type BitableFormWithDoc = BitableFormBase & {
+		/**
+		 * 关联的飞书文档配置 ID，如果有，会将文章内容保存到飞书文档。
+		 */
+		linkDocFormId: string;
+		fieldsMap: BitableFieldsMapWithDoc;
+	};
+
+	type BitableFormWithoutDoc = BitableFormBase & {
+		linkDocFormId?: undefined;
+		fieldsMap: BitableFieldsMapWithoutDoc;
+	};
+
+	type BitableFormType = BitableFormWithDoc | BitableFormWithoutDoc;
 
 	type DocFromType = {
 		/**
@@ -149,21 +158,7 @@ declare global {
 		folderToken: string;
 	};
 
-	type UnionFormType = {
-		/**
-		 *  配置 id
-		 */
-		id: string;
-		/**
-		 *  配置名称
-		 */
-		name: string;
-		formType: '联动配置';
-		linkFormId: SheetFormType['id'] | BitableFormType['id'];
-		docFormId: DocFromType['id'];
-	};
-
-	type FormType = SheetFormType | BitableFormType | DocFromType | UnionFormType;
+	type FormType = SheetFormType | BitableFormType | DocFromType;
 
 	type Forms = FormType[];
 

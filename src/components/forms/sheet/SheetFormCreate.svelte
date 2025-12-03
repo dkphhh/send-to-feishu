@@ -1,8 +1,12 @@
 <script lang="ts">
-	import { Stepper, makeStep } from '@efstajas/svelte-stepper';
+	import SaveArticle from './step/SaveArticle.svelte';
+	import Name from './step/Name.svelte';
+	import FieldSelectorStep from '@/components/forms/sheet/step/FieldSelectorStep.svelte';
+	import ParseUrl from './step/ParseUrl.svelte';
+	import SetStartIndex from './step/SetStartIndex.svelte';
+	import WorkSheetSelector from './step/WorkSheetSelector.svelte';
 
-	import SheetFieldSelector from '@/components/forms/sheet/step/FieldSelector.svelte';
-	const form: SheetFormType = $state({
+	let form: SheetFormType = $state({
 		id: crypto.randomUUID(),
 		formType: '电子表格',
 		name: '',
@@ -14,7 +18,30 @@
 		},
 		fields: ['title', 'url']
 	});
-	let isComplete = $derived(
-		!!form.sheetToken && !!form.sheetId && !!form.name && form.fields.length > 0
-	);
+
+	let currentStepIndex = $state(0);
+
+	const stepsComponents = [
+		SaveArticle,
+		ParseUrl,
+		WorkSheetSelector,
+		FieldSelectorStep,
+		SetStartIndex,
+		Name
+	];
+
+	function next() {
+		if (currentStepIndex < stepsComponents.length - 1) {
+			currentStepIndex++;
+		}
+	}
+
+	function pre() {
+		if (currentStepIndex > 0) {
+			currentStepIndex--;
+		}
+	}
+	let CurrentStepComponent = $derived(stepsComponents[currentStepIndex]);
 </script>
+
+<CurrentStepComponent bind:form onNext={next} onPre={pre} />
