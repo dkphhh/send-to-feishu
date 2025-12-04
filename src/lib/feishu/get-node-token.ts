@@ -44,7 +44,7 @@ export async function getNodeToken(url: string): Promise<{ token: string; object
 		throw new Error('未找到有效的凭据');
 	}
 
-	const apiUrl = 'https://open.feishu.cn/open-apis/wiki/v2/spaces/get_node';
+	const apiUrl = `https://open.feishu.cn/open-apis/wiki/v2/spaces/get_node?token=${token}`;
 
 	const headers = {
 		Authorization: `Bearer ${await credentials.tokenManager.getToken()}`,
@@ -52,7 +52,7 @@ export async function getNodeToken(url: string): Promise<{ token: string; object
 	};
 
 	const res = await fetch(apiUrl, {
-		method: 'POST',
+		method: 'GET',
 		headers
 	});
 

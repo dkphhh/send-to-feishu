@@ -22,7 +22,6 @@
 		}
 		try {
 			await setForm(form);
-			alert('保存成功');
 			gotoPage('formList');
 		} catch (error) {
 			alert('保存失败：' + (error instanceof Error ? error.message : '未知错误'));
@@ -39,7 +38,6 @@
 		try {
 			await deleteForm(form);
 			gotoPage('formList');
-			alert('删除成功');
 		} catch (error) {
 			gotoPage('formList');
 			alert('删除失败：' + (error instanceof Error ? error.message : '未知错误'));

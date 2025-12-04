@@ -20,27 +20,21 @@
 				{form.formType}
 			</div>
 		</div>
-
-		{#if isLoading}
-			<button type="button" class="btn rounded-2xl btn-primary" aria-label="文章内容保存中……">
-				<span class="loading loading-spinner"></span>
-			</button>
-		{:else}
-			<button
-				type="button"
-				class="btn rounded-2xl btn-primary"
-				disabled={isLoading}
-				onclick={async () => {
-					try {
-						isLoading = true;
-						resultUrl = await sendToFeishu(form.id);
-					} catch (error) {
-						const errorMessage = error instanceof Error ? error.message : String(error);
-						alert(`发送失败：${errorMessage}`);
-					}
-					isLoading = false;
-				}}>保存</button
-			>{/if}
+		<button
+			type="button"
+			class="btn rounded-2xl btn-primary"
+			disabled={isLoading}
+			onclick={async () => {
+				try {
+					isLoading = true;
+					resultUrl = await sendToFeishu(form.id);
+				} catch (error) {
+					const errorMessage = error instanceof Error ? error.message : String(error);
+					alert(`发送失败：${errorMessage}`);
+				}
+				isLoading = false;
+			}}>保存</button
+		>
 	</li>
 {/snippet}
 

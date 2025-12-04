@@ -21,21 +21,21 @@
 		bind:value={form.name}
 	/>
 	{#snippet footer()}
-		<div class=" flex flex-row gap-4"></div>
-		<StepButton isDisable={false} description="上一步" onclick={onPre} />
-
-		<button
-			class="btn rounded-2xl btn-primary"
-			disabled={!isComplete}
-			onclick={async () => {
-				try {
-					await setForm(form);
-				} catch (e) {
-					alert(`创建配置失败：${(e as Error).message}`);
-					return;
-				}
-				gotoPage('index');
-			}}>新建配置</button
-		>
+		<div class=" flex flex-row gap-4">
+			<StepButton isDisable={false} description="上一步" onclick={onPre} />
+			<button
+				class="btn rounded-2xl btn-primary"
+				disabled={!isComplete}
+				onclick={async () => {
+					try {
+						await setForm(form);
+					} catch (e) {
+						alert(`创建配置失败：${(e as Error).message}`);
+						return;
+					}
+					gotoPage('index');
+				}}>新建配置</button
+			>
+		</div>
 	{/snippet}
 </StepLayout>

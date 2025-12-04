@@ -51,8 +51,6 @@ interface FeishuTokenResponse {
  * @class BaseToken
  */
 abstract class BaseToken {
-	protected _token: string = '';
-	protected generate_time: Date = new Date(2000, 0, 1, 0, 0, 0); // 初始化为 2000 年 1 月 1 日，让类第一次实例化时，token 立即过期，从而触发生成新 token
 	protected refreshPromise: Promise<string> | null = null; // 并发请求锁，如果 refreshPromise 值不为 null 说明当前正在请求新的 token
 	protected abstract durationInSeconds: number;
 	/**
@@ -66,6 +64,26 @@ abstract class BaseToken {
 		protected readonly init: RequestInit
 	) {}
 
+	private async getGenerateTime(): Promise<Date> {
+		return chrome.storage.local.get(['feishuToken']).then((result) => {
+			if (result.generateTime) {
+				return new Date(result.generateTime as string);
+			} else {
+				return new Date(2000, 0, 1, 0, 0, 0);
+			}
+		});
+	}
+
+	private getLocalToken(): Promise<string | null> {
+		return chrome.storage.local.get(['feishuToken']).then((result) => {
+			return (result.feishuToken as string) || null;
+		});
+	}
+
+	private setLocalToken(token: string): Promise<void> {
+		return chrome.storage.local.set({ feishuToken: token, generateTime: new Date().toISOString() });
+	}
+
 	/**
 	 * 判断 token 是否过期
 	 *
@@ -73,8 +91,8 @@ abstract class BaseToken {
 	 * @return {boolean} 是否过期
 	 * @memberof Feishu
 	 */
-	private isExpired() {
-		return differenceInSeconds(new Date(), this.generate_time) > this.durationInSeconds;
+	private async isExpired() {
+		return differenceInSeconds(new Date(), await this.getGenerateTime()) > this.durationInSeconds;
 	}
 
 	/**
@@ -92,9 +110,10 @@ abstract class BaseToken {
 	 * @memberof BaseToken
 	 */
 	async getToken() {
-		// 情况 1: 如果 token 没有过期并且有值，则直接返回
-		if (!this.isExpired() && this._token) {
-			return this._token;
+		// 情况 1:当前没有请求在刷新 token，且本地有未过期的 token，则直接返回本地 token
+		const localToken = await this.getLocalToken();
+		if (!(await this.isExpired()) && localToken) {
+			return localToken;
 		}
 
 		// 情况 2:当前有请求正在刷新 token，则等待请求完成
@@ -106,8 +125,7 @@ abstract class BaseToken {
 		try {
 			this.refreshPromise = this.enforceGetToken();
 			const newToken = await this.refreshPromise;
-			this._token = newToken;
-			this.generate_time = new Date();
+			this.setLocalToken(newToken);
 			return newToken;
 		} finally {
 			// 无论是否成功都要重置 refreshPromise 为 null

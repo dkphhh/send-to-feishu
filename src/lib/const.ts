@@ -15,7 +15,7 @@ export const ARTICLE_FIELDS: Record<FetchedArticleField | 'feishuDocUrl', string
 };
 
 export const SHEET_STEP_TITLES = [
-	'保存文章吗？',
+	'保存文章内容吗？',
 	'填写表格链接',
 	'选择工作表',
 	'选择字段',
@@ -26,7 +26,7 @@ export const SHEET_STEP_TITLES = [
 export type SheetStep = (typeof SHEET_STEP_TITLES)[number];
 
 export const BITABLE_STEP_TITLES = [
-	'保存文章吗？',
+	'保存文章内容吗？',
 	'填写多维表格链接',
 	'选择数据表',
 	'选择字段映射',

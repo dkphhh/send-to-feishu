@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { gotoPage } from '@/lib/utils.js';
 	import { credentials } from './settings.svelte.js';
 	let feishuAppId = $derived(credentials.feishuAppId);
 	let feishuAppSecret = $derived(credentials.feishuAppSecret);
@@ -20,9 +21,7 @@
 			if (!token) {
 				throw new Error('无法获取访问令牌，请检查凭证是否正确');
 			}
-
-			alert('保存成功，凭证有效');
-			window.location.href = chrome.runtime.getURL('src/pages/formlist/index.html');
+			gotoPage('index');
 		} catch (e) {
 			alert('保存失败：' + (e as Error).message);
 		}

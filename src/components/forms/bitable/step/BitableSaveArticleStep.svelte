@@ -10,7 +10,7 @@
 </script>
 
 <StepLayout
-	currentStep="保存文章吗？"
+	currentStep="保存文章内容吗？"
 	description="多维表格只能保存文章的标题、链接等元数据。如需将文章内容也一并保存到飞书文档，请在下方选择你需要关联的飞书文档保存配置。"
 >
 	<BitableSaveArticle bind:form />

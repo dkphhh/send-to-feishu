@@ -4,7 +4,7 @@
 
 	let { form = $bindable() }: { form: SheetFormType } = $props();
 	const docForms = $derived(allForms.filter((f) => f.formType === '飞书文档'));
-	let selectedDocFormId = $state<string | undefined>();
+	let selectedDocFormId = $derived(form.linkDocFormId);
 </script>
 
 <select

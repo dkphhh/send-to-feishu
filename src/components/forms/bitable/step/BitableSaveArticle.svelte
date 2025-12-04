@@ -3,7 +3,7 @@
 	import { allForms } from '../../forms.svelte';
 	let { form = $bindable() }: { form: BitableFormType } = $props();
 	const docForms = $derived(allForms.filter((f) => f.formType === '飞书文档'));
-	let selectedDocFormId = $state<string | undefined>();
+	let selectedDocFormId = $derived<string | undefined>(form.linkDocFormId);
 </script>
 
 <select
