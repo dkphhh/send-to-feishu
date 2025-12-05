@@ -152,10 +152,10 @@ export class FeishuSheetManager {
 					break;
 				case 'title':
 					payload[0].push(articleData.title || '');
-					break; 
+					break;
 				case 'url':
 					if (articleData.url) {
-						payload[0].push({ text: '原文链接', link: articleData.url, type: 'url' });
+						payload[0].push({ text: articleData.url, link: articleData.url, type: 'url' });
 					} else {
 						payload[0].push('');
 					}
@@ -178,11 +178,12 @@ export class FeishuSheetManager {
 	 * @returns
 	 */
 	private getRange(): string {
-		if (this.rangeIndex.endIndex === '' || this.rangeIndex.startIndex === '') {
+		console.log('rangeIndex:', this.rangeIndex);
+		if (this.rangeIndex.startIndex === '') {
 			return this.sheetId;
 		}
 
-		if (this.rangeIndex.startIndex && this.rangeIndex.endIndex === '') {
+		if (this.rangeIndex.endIndex === '') {
 			return `${this.sheetId}!${this.rangeIndex.startIndex.toUpperCase()}:Z`;
 		}
 
@@ -200,6 +201,7 @@ export class FeishuSheetManager {
 			Authorization: `Bearer ${await this.tokenManager.getToken()}`,
 			'Content-Type': 'application/json; charset=utf-8'
 		};
+		console.log('range:', this.getRange());
 		const body = JSON.stringify({
 			valueRange: { range: this.getRange(), values: payload }
 		});

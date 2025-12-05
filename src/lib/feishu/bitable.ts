@@ -69,7 +69,6 @@ export class FeishuBitableManager {
 
 		const url = `https://open.feishu.cn/open-apis/bitable/v1/apps/${appToken}/tables?page_size=100`;
 
-		
 		const headers = {
 			Authorization: `Bearer ${await credentials.tokenManager.getToken()}`,
 			'Content-Type': 'application/json; charset=utf-8'
@@ -164,7 +163,7 @@ export class FeishuBitableManager {
 			if (value !== undefined && value.trim() !== '') {
 				if (articleField === 'url' && bitableField.type === 15) {
 					// 链接字段，且多维表格字段类型为链接类型
-					payload[bitableField.name] = { link: value, text: '原文链接' };
+					payload[bitableField.name] = { link: value, text: value };
 					return;
 				} else if (articleField === 'feishuDocUrl' && bitableField.type === 15) {
 					// 飞书文档链接字段，且多维表格字段类型为链接类型

@@ -139,7 +139,7 @@ export async function sendToFeishu(formId: string): Promise<string> {
 			if (!form.linkDocFormId) {
 				// 如果没有，直接发送到电子表格
 				const payload: SheetPayload = FeishuSheetManager.getPayload(form.fields, articleData);
-				console.log('Sheet payload:', payload);
+
 				return await sendToFeishuSheet(formId, payload);
 			} else {
 				// 如果有，先发送到飞书文档，再把文档链接发送到电子表格

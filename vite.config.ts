@@ -1,42 +1,43 @@
-import path from "node:path";
-import { crx } from "@crxjs/vite-plugin";
-import { svelte } from "@sveltejs/vite-plugin-svelte";
+import path from 'node:path';
+import { crx } from '@crxjs/vite-plugin';
+import { svelte } from '@sveltejs/vite-plugin-svelte';
 
-import tailwindcss from "@tailwindcss/vite";
+import tailwindcss from '@tailwindcss/vite';
 
-import { defineConfig } from "vite";
-import zip from "vite-plugin-zip-pack";
-import manifest from "./manifest.config";
-import { name, version } from "./package.json";
+import { defineConfig } from 'vite';
+import zip from 'vite-plugin-zip-pack';
+import manifest from './manifest.config';
+import { name, version } from './package.json';
 
 export default defineConfig({
-  resolve: {
-    alias: {
-      "@": `${path.resolve(__dirname, "src")}`,
-    },
-  },
-  plugins: [
-    tailwindcss(),
-    svelte({
-      compilerOptions: {
-        dev: true,
-      },
-    }),
-    crx({ manifest }),
-    zip({ outDir: "release", outFileName: `crx-${name}-${version}.zip` }),
-  ],
-  server: {
-    cors: {
-      origin: [/chrome-extension:\/\//],
-    },
-  },
-  build: {
-    rollupOptions: {
-      input: {
-        formEdit: "src/pages/formEdit/index.html",
-        formList: "src/pages/formList/index.html",
-        settings: "src/pages/settings/index.html",
-      },
-    },
-  },
+	resolve: {
+		alias: {
+			'@': `${path.resolve(__dirname, 'src')}`
+		}
+	},
+	plugins: [
+		tailwindcss(),
+		svelte({
+			compilerOptions: {
+				dev: true
+			}
+		}),
+		crx({ manifest }),
+		zip({ outDir: 'release', outFileName: `crx-${name}-${version}.zip` })
+	],
+	server: {
+		cors: {
+			origin: [/chrome-extension:\/\//]
+		}
+	},
+	build: {
+		rollupOptions: {
+			input: {
+				formCreate: 'src/pages/formCreate/index.html',
+				formEdit: 'src/pages/formEdit/index.html',
+				formList: 'src/pages/formList/index.html',
+				settings: 'src/pages/settings/index.html'
+			}
+		}
+	}
 });

@@ -1,15 +1,18 @@
 <script lang="ts">
 	import Layout from '@/components/layout/Layout.svelte';
+	import { notificationManager } from '@/components/notification/notificationManager.svelte';
 	import { FORM_ICONS } from '@/lib/const';
 	import { allForms } from '@/components/forms/forms.svelte';
 	import { credentials } from '@/components/settings/settings.svelte';
 	import { sendToFeishu } from '@/lib/sender';
 	import OnInstallGuide from '@/components/settings/OnInstallGuide.svelte';
-	import SuccessNotification from '@/components/SuccessNotification.svelte';
 	import CreateFormButton from '@/components/forms/CreateFormButton.svelte';
-	let resultUrl: string = $state('');
 	let isLoading: boolean = $state(false);
 </script>
+
+{#snippet susccessMessage(url: string)}
+	<p>保存成功，<a href={url}>点击查看</a></p>
+{/snippet}
 
 {#snippet listItem(form: FormType)}
 	<li class="list-row">
@@ -27,7 +30,12 @@
 			onclick={async () => {
 				try {
 					isLoading = true;
-					resultUrl = await sendToFeishu(form.id);
+					const resultUrl = await sendToFeishu(form.id);
+					notificationManager.sentMessage({
+						type: 'success',
+						message: susccessMessage,
+						props: resultUrl
+					});
 				} catch (error) {
 					const errorMessage = error instanceof Error ? error.message : String(error);
 					alert(`发送失败：${errorMessage}`);
@@ -56,5 +64,4 @@
 	{:else}
 		<OnInstallGuide />
 	{/if}
-	<SuccessNotification url={resultUrl} />
 </Layout>

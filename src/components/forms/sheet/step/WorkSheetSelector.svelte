@@ -22,7 +22,7 @@
 		<span class="loading loading-sm loading-spinner"></span>
 	{:then ws}
 		{@const chosenSheet = ws.find((s) => s.sheet_id === form.sheetId)}
-		<select class="select" bind:value={form.sheetId}>
+		<select class="select min-w-60" bind:value={form.sheetId}>
 			<option disabled selected>选择工作表</option>
 			{#each ws as s (s.sheet_id)}
 				<option value={s.sheet_id}>{s.title}</option>

@@ -20,7 +20,7 @@
 		<span class="loading loading-sm loading-spinner"></span>
 	{:then ts}
 		{@const chosenTable = ts.find((t) => t.table_id === form.tableId)}
-		<select class="select" bind:value={form.tableId}>
+		<select class="select min-w-60" bind:value={form.tableId}>
 			<option disabled selected>选择数据表</option>
 			{#each ts as t (t.table_id)}
 				<option value={t.table_id}>{t.name}</option>

@@ -153,7 +153,9 @@ export class FeishuToken extends BaseToken {
 			baseUrl += '/';
 		}
 
-		this.baseUrl = baseUrl;
+		if (!baseUrl.endsWith('feishu.cn/')) {
+			throw new Error('飞书文档基础链接必须以 feishu.cn 结尾');
+		}
 	}
 
 	protected durationInSeconds: number = 7000; // 飞书 token 有效期默认 7200 秒，这里设置 7000 秒，以防万一
