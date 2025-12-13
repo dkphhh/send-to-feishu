@@ -36,14 +36,14 @@
 	}
 </script>
 
-<div class="flex w-80 flex-col gap-2">
+<div class="flex w-full min-w-80 flex-col gap-2">
 	{#if getCurrentPath() == getPagePath('formEdit')}
 		<div class="label">
 			<span class="label-text">保存字段</span>
 		</div>
 	{/if}
 	<!-- Selected Fields List -->
-	<div class="flex w-full flex-col gap-2">
+	<div class="flex w-full min-w-80 flex-col gap-2">
 		{#each fields as field, index (field)}
 			<div
 				class="flex items-center justify-between rounded-md border border-base-300 bg-base-100 p-2 shadow-md"

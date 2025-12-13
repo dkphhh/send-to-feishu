@@ -33,13 +33,13 @@
 	</div>
 
 	<!-- Folder Token -->
-	<div>
+	<div class="w-full">
 		<label for="folderToken" class="label">Folder Token</label>
 		<input
 			required
 			id="folderToken"
 			type="text"
-			class="input"
+			class="input w-full"
 			placeholder="Folder Token"
 			bind:value={form.folderToken}
 		/>

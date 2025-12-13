@@ -16,13 +16,13 @@
 	} = $props();
 </script>
 
-<div class="flex flex-col items-center justify-center gap-4">
+<div class="flex w-full flex-col items-center justify-center gap-4">
 	<Step stepList={SHEET_STEP_TITLES} {currentStep} />
 	<h1 class="mt-4 text-xl font-semibold">{currentStep}</h1>
 	{#if description}
 		<p class="mx-4 label text-justify text-pretty">{description}</p>
 	{/if}
-	<div class="my-4 flex flex-col items-center justify-center gap-2">
+	<div class="my-4 flex w-full flex-col items-center justify-center gap-2">
 		{@render children()}
 	</div>
 	{#if footer}

@@ -43,8 +43,8 @@
 	}
 </script>
 
-<div class="container mx-auto p-2">
-	<fieldset class="mx-auto fieldset w-xs rounded-box border border-base-300 bg-base-200 p-4">
+<div class="mx-auto w-full p-2">
+	<fieldset class="mx-auto fieldset w-full rounded-box border border-base-300 bg-base-200 p-4">
 		<legend class="fieldset-legend">
 			{#if isCreateMode}
 				<span>新建 {form.icon + ' ' + form.name} 配置</span>

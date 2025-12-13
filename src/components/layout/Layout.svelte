@@ -4,14 +4,11 @@
 	import Nav from '@/components/layout/Nav.svelte';
 	import Notification from '../notification/Notification.svelte';
 	const isDev = import.meta.env.DEV;
-
-
 </script>
-
 
 <Nav />
 <Notification />
-<main class="container mx-auto p-2">
+<main class="container mx-auto min-w-80 p-2">
 	{@render children()}
 	{#if isDev}
 		<span class=" fixed bottom-2 left-2 badge badge-sm badge-warning">Dev Mode</span>

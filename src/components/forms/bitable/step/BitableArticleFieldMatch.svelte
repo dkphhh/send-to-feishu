@@ -46,10 +46,14 @@
 				加载多维表格字段<span class="loading loading-sm loading-dots"></span>
 			</button>
 		{:then bitableFields}
-			<div class="flex flex-col gap-2">
+			<div class="flex w-full flex-col gap-2">
 				{#each visibleFields as field (field)}
 					{@const fieldsMap = form.fieldsMap as BitableFieldsMapWithDoc}
-					<label for={field} class="select w-80">
+					{@const otherSelectedNames = visibleFields
+						.filter((f) => f !== field)
+						.map((f) => fieldsMap[f]?.name)
+						.filter((name) => name !== undefined)}
+					<label for={field} class="select w-full min-w-80">
 						<span class="label w-40">{ARTICLE_FIELDS[field]}</span>
 						<select
 							value={fieldsMap[field]?.name || ''}
@@ -70,7 +74,7 @@
 							id={field}
 						>
 							<option value="">不保存</option>
-							{#each bitableFields as bf (bf.field_id)}
+							{#each bitableFields.filter((bf) => !otherSelectedNames.includes(bf.field_name)) as bf (bf.field_id)}
 								<option value={bf.field_name}>{bf.field_name}</option>
 							{/each}
 						</select>

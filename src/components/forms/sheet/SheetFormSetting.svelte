@@ -11,7 +11,7 @@
 <FormSettingLayout {form} {isComplete}>
 	<!-- 配置名称和图标 -->
 	<div class="flex w-full flex-row gap-2">
-		<div class="flex-1">
+		<div class="flex flex-1 flex-col">
 			<label for="icon" class="label">配置图标</label>
 			<input
 				required
@@ -23,7 +23,7 @@
 			/>
 			<p class="label">建议使用 emoji</p>
 		</div>
-		<div class="flex-2">
+		<div class="flex flex-2 flex-col">
 			<label for="name" class="label">配置名称</label>
 			<input
 				required
@@ -37,19 +37,19 @@
 	</div>
 
 	<!-- 是否和飞书文档关联 -->
-	<div>
-		<label for="linkDocForm" class="label">App Token</label>
+	<div class="flex w-full flex-col">
+		<label for="linkDocForm" class="label">将文章内容保存到飞书文档</label>
 		<SheetSaveArticle bind:form />
 	</div>
 
 	<!-- Sheet Token -->
-	<div>
+	<div class="w-full">
 		<label for="sheetToken" class="label">Sheet Token</label>
 		<input
 			required
 			id="sheetToken"
 			type="text"
-			class="input"
+			class="input w-full"
 			placeholder="Sheet Token"
 			bind:value={form.sheetToken}
 		/>
@@ -62,7 +62,7 @@
 			required
 			id="sheetId"
 			type="text"
-			class="input"
+			class="input w-full"
 			placeholder="Sheet ID"
 			bind:value={form.sheetId}
 		/>
@@ -70,7 +70,7 @@
 
 	<!-- 起止列 -->
 	<div class="flex flex-row gap-2">
-		<div class="w-1/2">
+		<div class="flex-1">
 			<label for="startIndex" class="label">
 				<span class="label-text">起始列</span>
 			</label>
@@ -85,7 +85,7 @@
 			<span class="label text-wrap">如果数据表从 A 列开始，就填 A</span>
 		</div>
 
-		<div class="w-1/2">
+		<div class="flex-1">
 			<label for="endIndex" class="label">
 				<span class="label-text">结束列</span>
 			</label>
@@ -102,7 +102,7 @@
 	</div>
 
 	<!-- 字段选择 -->
-	<div>
+	<div class="w-full">
 		<FieldSelector bind:form />
 	</div>
 </FormSettingLayout>

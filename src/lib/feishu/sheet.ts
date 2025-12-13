@@ -185,7 +185,7 @@ export class FeishuSheetManager {
 					break;
 				case 'feishuDocUrl':
 					if (feishuDocUrl) {
-						payload[0].push({ text: '飞书文档链接', link: feishuDocUrl, type: 'url' });
+						payload[0].push(feishuDocUrl);
 					} else {
 						payload[0].push('');
 					}

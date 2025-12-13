@@ -43,7 +43,7 @@
 				<span class="loading loading-sm loading-spinner"></span>
 			</div>
 		{:then content}
-			<fieldset class="fieldset w-xs rounded-box border border-base-300 bg-base-200 p-4">
+			<fieldset class="fieldset w-full rounded-box border border-base-300 bg-base-200 p-4">
 				<legend class="fieldset-legend">保存到：{form.icon + ' ' + form.name}</legend>
 
 				{#if visibleFields === null || visibleFields.has('title')}
@@ -51,7 +51,7 @@
 					<input
 						id="articleTitle"
 						type="text"
-						class="input"
+						class="input w-full"
 						bind:value={content.title}
 						placeholder="文章标题"
 					/>
@@ -62,7 +62,7 @@
 					<input
 						id="articleAuthor"
 						type="text"
-						class="input"
+						class="input w-full"
 						bind:value={content.author}
 						placeholder="文章作者"
 					/>
@@ -73,7 +73,7 @@
 					<input
 						id="articleDescription"
 						type="text"
-						class="input"
+						class="input w-full"
 						bind:value={content.description}
 						placeholder="文章描述"
 					/>
@@ -84,7 +84,7 @@
 					<input
 						id="articleDatetime"
 						type="datetime-local"
-						class="input"
+						class="input w-full"
 						value={stringifyDate(content.published)}
 						onchange={(event) => {
 							const date = new Date((event.currentTarget as HTMLInputElement).value);
@@ -99,7 +99,7 @@
 					<input
 						id="articleSource"
 						type="text"
-						class="input"
+						class="input w-full"
 						bind:value={content.source}
 						placeholder="文章来源"
 					/>
@@ -110,7 +110,7 @@
 					<input
 						id="articleUrl"
 						type="text"
-						class="input"
+						class="input w-full"
 						bind:value={content.url}
 						placeholder="文章链接"
 					/>

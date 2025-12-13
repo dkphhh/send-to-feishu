@@ -187,7 +187,7 @@ export class FeishuBitableManager {
 					return;
 				} else if (articleField === 'feishuDocUrl' && bitableField.type === 15) {
 					// 飞书文档链接字段，且多维表格字段类型为链接类型
-					payload[bitableField.name] = { link: value, text: '飞书文档链接' };
+					payload[bitableField.name] = { link: value, text: value };
 					return;
 				} else if (articleField === 'published' && bitableField.type === 5) {
 					// 时间字段，且多维表格对应字段也是时间格式，转化为时间戳
@@ -229,7 +229,7 @@ export class FeishuBitableManager {
 
 			if (resData.code) {
 				throw new Error(
-					`飞书多维表格接口报错。请参考以下方式解决：https://open.feishu.cn/search?q=${resData.code}`
+					`飞书多维表格接口报错。请参考以下方式解决：https://open.feishu.cn/search?q=${resData.code}。`
 				);
 			}
 
@@ -240,7 +240,7 @@ export class FeishuBitableManager {
 
 		if (resData.code !== 0) {
 			throw new Error(
-				`飞书多维表格接口报错：${resData.msg},请参考以下方式解决：https://open.feishu.cn/search?q=${resData.code}`
+				`飞书多维表格接口报错：${resData.msg},请参考以下方式解决：https://open.feishu.cn/search?q=${resData.code}。`
 			);
 		}
 	}

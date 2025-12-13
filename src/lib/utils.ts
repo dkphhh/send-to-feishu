@@ -58,7 +58,16 @@ export function gotoPage(
 export async function getCurrentTabContent(): Promise<{ html: string; url: string }> {
 	const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 	if (tab?.id) {
-		return await chrome.tabs.sendMessage(tab.id, { type: 'get-page-content' });
+		const result = await chrome.scripting.executeScript({
+			target: { tabId: tab.id },
+			func: () => {
+				return {
+					html: document.documentElement.outerHTML,
+					url: window.location.href
+				};
+			}
+		});
+		return result[0].result as { html: string; url: string };
 	}
 	throw new Error('No active tab found');
 }

@@ -49,7 +49,7 @@
 </script>
 
 <div class="container mx-auto">
-	<fieldset class="mx-auto fieldset w-xs rounded-box border border-base-300 bg-base-200 p-4">
+	<fieldset class="mx-auto fieldset w-full rounded-box border border-base-300 bg-base-200 p-4">
 		<legend class="fieldset-legend">配置飞书访问凭证</legend>
 		<p class="label text-wrap">
 			如有疑问，请<a
@@ -63,7 +63,7 @@
 		<input
 			id="FeishuAppId"
 			type="text"
-			class="input"
+			class="input w-full"
 			placeholder="应用ID"
 			bind:value={feishuAppId}
 		/>
@@ -73,7 +73,7 @@
 		<input
 			id="FeishuAppSecret"
 			type="text"
-			class="input"
+			class="input w-full"
 			placeholder="应用秘钥"
 			bind:value={feishuAppSecret}
 		/>
@@ -83,7 +83,7 @@
 		<input
 			id="feishuBaseUrl"
 			type="text"
-			class="input"
+			class="input w-full"
 			placeholder="https://xxx.feishu.cn/"
 			bind:value={feishuBaseUrl}
 		/>

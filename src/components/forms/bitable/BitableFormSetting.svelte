@@ -9,7 +9,7 @@
 <FormSettingLayout {form} {isComplete}>
 	<!-- 配置名称和图标 -->
 	<div class="flex w-full flex-row gap-2">
-		<div class="flex-1">
+		<div class="flex flex-1 flex-col">
 			<label for="icon" class="label">配置图标</label>
 			<input
 				required
@@ -21,7 +21,7 @@
 			/>
 			<p class="label">建议使用 emoji</p>
 		</div>
-		<div class="flex-2">
+		<div class="flex flex-2 flex-col">
 			<label for="name" class="label">配置名称</label>
 			<input
 				required
@@ -35,37 +35,37 @@
 	</div>
 
 	<!-- 是否和飞书文档关联 -->
-	<div>
-		<label for="linkDocForm" class="label">App Token</label>
+	<div class="flex w-full flex-col">
+		<label for="linkDocForm" class="label">将文章内容保存到飞书文档</label>
 		<BitableSaveArticle bind:form />
 	</div>
 
 	<!-- App Token -->
-	<div>
+	<div class="flex w-full flex-col">
 		<label for="appToken" class="label">App Token</label>
 		<input
 			required
 			id="appToken"
 			type="text"
-			class="input"
+			class="input w-full"
 			placeholder="App Token"
 			bind:value={form.appToken}
 		/>
 	</div>
 	<!-- Table ID -->
-	<div>
+	<div class="w-full">
 		<label for="tableId" class="label">Table ID</label>
 		<input
 			required
 			id="tableId"
 			type="text"
-			class="input"
+			class="input w-full"
 			placeholder="Table ID"
 			bind:value={form.tableId}
 		/>
 	</div>
 	<!-- fieldMap -->
-	<div>
+	<div class="w-full">
 		<BitableArticleFieldMatch {form} />
 	</div>
 </FormSettingLayout>

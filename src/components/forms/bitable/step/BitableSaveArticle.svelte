@@ -7,7 +7,7 @@
 </script>
 
 <select
-	class="select min-w-60"
+	class="select w-full"
 	id="linkDocForm"
 	onchange={() => {
 		form.linkDocFormId = selectedDocFormId;

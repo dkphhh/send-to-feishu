@@ -20,18 +20,12 @@ export default defineManifest({
 			128: 'public/icons/128.png'
 		}
 	},
-	host_permissions: ['https://open.feishu.cn/*'],
+	host_permissions: ['http://*/*', 'https://*/*'],
 	background: {
 		service_worker: 'src/background/main.ts',
 		type: 'module'
 	},
-	content_scripts: [
-		{
-			js: ['src/content/index.ts'],
-			matches: ['http://*/*', 'https://*/*']
-		}
-	],
-	permissions: ['sidePanel', 'storage', 'contentSettings', 'tabs'],
+	permissions: ['sidePanel', 'storage', 'tabs', 'scripting'],
 	side_panel: {
 		default_path: 'src/pages/index/index.html'
 	}
