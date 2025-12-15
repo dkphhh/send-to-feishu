@@ -34,6 +34,9 @@
 		url?: string;
 		errorMessage?: string;
 	}>();
+
+	// 关闭对话框的 倒计时数字
+	let timeToCloseDialog = $state<number>(0);
 </script>
 
 <Layout>
@@ -127,6 +130,19 @@
 								type: 'success',
 								url: await sendToFeishu(formId, content)
 							};
+
+							setTimeout(() => {
+								sendingModal.close();
+								gotoPage('index');
+							}, 3000);
+							//关闭对话框的 倒计时数字
+							timeToCloseDialog = 3;
+							const interval = setInterval(() => {
+								timeToCloseDialog -= 1;
+								if (timeToCloseDialog <= 0) {
+									clearInterval(interval);
+								}
+							}, 1000);
 						} catch (e) {
 							result = {
 								type: 'error',
@@ -179,7 +195,8 @@
 		<div class="modal-box">
 			<h3 class="text-lg font-bold">发送成功</h3>
 			<p class="py-2">
-				点击<a target="_blank" href={result.url} class="link-success">链接</a> 查看结果
+				点击<a target="_blank" href={result.url} class="link-success">链接</a>
+				查看结果。对话框将在 {timeToCloseDialog} 秒后关闭。
 			</p>
 			<div class="modal-action">
 				<form method="dialog">

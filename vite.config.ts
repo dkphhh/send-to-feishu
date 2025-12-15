@@ -26,6 +26,11 @@ export default defineConfig({
 		zip({ outDir: 'release', outFileName: `crx-${name}-${version}.zip` })
 	],
 	server: {
+		port: 5173,
+		strictPort: true,
+		hmr: {
+			clientPort: 5173
+		},
 		cors: {
 			origin: [/chrome-extension:\/\//]
 		}
@@ -33,6 +38,7 @@ export default defineConfig({
 	build: {
 		rollupOptions: {
 			input: {
+				index: 'src/pages/index/index.html',
 				formCreate: 'src/pages/formCreate/index.html',
 				formEdit: 'src/pages/formEdit/index.html',
 				formList: 'src/pages/formList/index.html',

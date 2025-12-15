@@ -5,6 +5,11 @@ chrome.sidePanel
 	.setPanelBehavior({ openPanelOnActionClick: true })
 	.catch((error) => console.error(error));
 
+const isDev = import.meta.env.DEV;
+chrome.action.setBadgeText({
+	text: isDev ? 'DEV' : ''
+});
+
 // chrome.runtime.onInstalled.addListener((details) => {
 // 	if (details.reason === 'install') {
 // 		// 第一次下载时，打开设置页面
