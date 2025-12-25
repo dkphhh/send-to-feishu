@@ -2,7 +2,10 @@
 import { FeishuToken } from './feishu-token-manager';
 import { credentials } from '@/components/settings/settings.svelte';
 import { getNodeToken } from './get-node-token';
-export type BitablePayload = Record<string, string | number | { text: string; link: string }>;
+export type BitablePayload = Record<
+	string,
+	string | number | boolean | string[] | { text: string; link: string }
+>;
 export type BitableFieldsData = {
 	has_more: boolean;
 	page_token?: string;
@@ -24,6 +27,17 @@ export type BitableFieldsData = {
 		 * 字段在界面上的展示类型，例如进度字段是数字的一种展示形态。
 		 */
 		ui_type: string;
+		/**
+		 * 字段属性
+		 */
+		property?: {
+			options?: Array<{
+				name: string;
+				id: string;
+				color: number;
+			}>;
+			[key: string]: any;
+		};
 	}>;
 };
 
@@ -164,11 +178,15 @@ export class FeishuBitableManager {
 	 *
 	 * @param fieldsMap 包含字段映射关系的对象 key: 抓取的文章字段 value: 飞书多维表格的字段
 	 * @param articleData 抓取的文章数据
+	 * @param manualFields 手动填写的业务字段配置
+	 * @param manualValues 手动填写的业务字段值
 	 * @returns
 	 */
 	static getPayload(
 		fieldsMap: BitableFormType['fieldsMap'],
-		articleData: FetchedArticle & { feishuDocUrl?: string }
+		articleData: FetchedArticle & { feishuDocUrl?: string },
+		manualFields?: BitableManualField[],
+		manualValues?: Record<string, any>
 	): BitablePayload {
 		const payload: BitablePayload = {};
 
@@ -201,6 +219,29 @@ export class FeishuBitableManager {
 				}
 			}
 		});
+
+		// 处理手动填写的业务字段
+		if (manualFields && manualValues) {
+			manualFields.forEach((field) => {
+				const value = manualValues[field.id];
+				if (value !== undefined && value !== null) {
+					if (field.type === 5 && value) {
+						// 日期类型转时间戳
+						payload[field.columnName] = new Date(value).getTime();
+					} else if (field.type === 2) {
+						// 数字类型
+						payload[field.columnName] = Number(value);
+					} else if (field.type === 18) {
+						// 复选框
+						payload[field.columnName] = Boolean(value);
+					} else {
+						// 文本、单选、多选等直接赋值
+						payload[field.columnName] = value;
+					}
+				}
+			});
+		}
+
 		return payload;
 	}
 

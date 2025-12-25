@@ -37,6 +37,8 @@
 
 	// 关闭对话框的 倒计时数字
 	let timeToCloseDialog = $state<number>(0);
+
+	let manualValues = $state<Record<string, any>>({});
 </script>
 
 <Layout>
@@ -90,7 +92,7 @@
 						class="input w-full"
 						value={stringifyDate(content.published)}
 						onchange={(event) => {
-							const date = new Date((event.currentTarget as HTMLInputElement).value);
+							const date = new Date(event.currentTarget.value);
 							content.published = stringifyDate(date);
 						}}
 						placeholder="文章发布时间"
@@ -119,6 +121,72 @@
 					/>
 				{/if}
 
+				<!-- 业务字段手动填写区 -->
+				{#if form.formType === '多维表格' && form.manualFields && form.manualFields.length > 0}
+					<div class="divider divider-start text-xs text-base-content/50">业务信息点选</div>
+					{#each form.manualFields as field (field.id)}
+						<label class="label font-semibold" for={field.id}>{field.label}</label>
+
+						{#if field.type === 3 || field.type === 4}
+							<!-- 单选或多选标签组 -->
+							<div class="flex flex-wrap gap-2">
+								{#each field.options || [] as option (option.id)}
+									{@const isSelected =
+										field.type === 3
+											? manualValues[field.id] === option.name
+											: (manualValues[field.id] || []).includes(option.name)}
+									<button
+										type="button"
+										class="btn btn-sm rounded-full border-none {isSelected
+											? 'btn-primary'
+											: 'bg-base-300 text-base-content hover:bg-base-content/20'}"
+										onclick={() => {
+											if (field.type === 3) {
+												manualValues[field.id] =
+													manualValues[field.id] === option.name ? undefined : option.name;
+											} else {
+												const current = manualValues[field.id] || [];
+												if (current.includes(option.name)) {
+													manualValues[field.id] = current.filter((v) => v !== option.name);
+												} else {
+													manualValues[field.id] = [...current, option.name];
+												}
+											}
+										}}
+									>
+										{option.name}
+									</button>
+								{/each}
+							</div>
+						{:else if field.type === 5}
+							<input
+								id={field.id}
+								type="date"
+								class="input w-full"
+								onchange={(e) => (manualValues[field.id] = e.currentTarget.value)}
+							/>
+						{:else if field.type === 18}
+							<div class="flex items-center gap-2">
+								<input
+									id={field.id}
+									type="checkbox"
+									class="checkbox checkbox-primary"
+									onchange={(e) => (manualValues[field.id] = e.currentTarget.checked)}
+								/>
+								<span class="text-sm text-base-content/70">确认</span>
+							</div>
+						{:else}
+							<input
+								id={field.id}
+								type="text"
+								class="input w-full"
+								placeholder={`请输入${field.label}`}
+								oninput={(e) => (manualValues[field.id] = e.currentTarget.value)}
+							/>
+						{/if}
+					{/each}
+				{/if}
+
 				<button
 					class="btn mt-4 btn-primary"
 					disabled={isLoading}
@@ -128,7 +196,7 @@
 						try {
 							result = {
 								type: 'success',
-								url: await sendToFeishu(formId, content)
+								url: await sendToFeishu(formId, content, $state.snapshot(manualValues))
 							};
 
 							setTimeout(() => {
@@ -146,7 +214,7 @@
 						} catch (e) {
 							result = {
 								type: 'error',
-								errorMessage: `发送文章失败：${(e as Error).message}`
+								errorMessage: `发送文章失败：${e instanceof Error ? e.message : String(e)}`
 							};
 						} finally {
 							isLoading = false;
