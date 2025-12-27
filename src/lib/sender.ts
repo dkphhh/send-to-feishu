@@ -107,14 +107,16 @@ async function sendToFeishuDoc(
  * @param {string} formId 表单配置的 ID
  * @returns {Promise<string>}  返回飞书中创建的内容的链接
  */
-export async function sendToFeishu(formId: string, articleData: FetchedArticle): Promise<string> {
+export async function sendToFeishu(
+	formId: string,
+	articleData: FetchedArticle,
+	manualValues?: Record<string, any>
+): Promise<string> {
 	const form = getForm(formId);
 
 	if (!form) {
 		throw new Error('表单配置未找到');
 	}
-
-	
 
 	switch (form.formType) {
 		case '电子表格': {
@@ -158,7 +160,9 @@ export async function sendToFeishu(formId: string, articleData: FetchedArticle):
 			if (!form.linkDocFormId) {
 				const payload: BitablePayload = FeishuBitableManager.getPayload(
 					form.fieldsMap,
-					articleData
+					articleData,
+					form.manualFields,
+					manualValues
 				);
 				return await sendToFeishuBitable(formId, payload);
 			} else {
@@ -185,7 +189,9 @@ export async function sendToFeishu(formId: string, articleData: FetchedArticle):
 				const modifiedArticleData = { ...articleData, feishuDocUrl: docUrl };
 				const payload: BitablePayload = FeishuBitableManager.getPayload(
 					form.fieldsMap,
-					modifiedArticleData
+					modifiedArticleData,
+					form.manualFields,
+					manualValues
 				);
 
 				return await sendToFeishuBitable(formId, payload);

@@ -20,6 +20,21 @@
 		}
 		return true;
 	}) as (keyof typeof ARTICLE_FIELDS)[];
+
+	function addManualField() {
+		if (!form.manualFields) form.manualFields = [];
+		form.manualFields.push({
+			id: crypto.randomUUID(),
+			label: '',
+			columnId: '',
+			columnName: '',
+			type: 1
+		});
+	}
+
+	function removeManualField(index: number) {
+		form.manualFields?.splice(index, 1);
+	}
 </script>
 
 {#snippet getBitableFieldsButton()}
@@ -33,40 +48,39 @@
 	</button>
 {/snippet}
 
-<div class="flex flex-col gap-2">
+<div class="flex flex-col gap-4">
 	{#if getCurrentPath() == getPagePath('formEdit')}
-		<label for="tableId" class="label">匹配多维表格字段</label>
+		<label for="tableId" class="label font-bold">匹配多维表格字段</label>
 	{/if}
 
 	{#if !allBitableFields}
 		{@render getBitableFieldsButton()}
 	{:else}
 		{#await allBitableFields}
-			<button disabled type="button" class="btn btn-sm btn-neutral" onclick={getBitableFields}>
+			<button disabled type="button" class="btn btn-sm btn-neutral">
 				加载多维表格字段<span class="loading loading-sm loading-dots"></span>
 			</button>
 		{:then bitableFields}
+			<!-- 源字段映射 -->
 			<div class="flex w-full flex-col gap-2">
+				<div class="divider divider-start text-xs text-base-content/50">提取字段映射</div>
 				{#each visibleFields as field (field)}
 					{@const fieldsMap = form.fieldsMap as BitableFieldsMapWithDoc}
-					{@const otherSelectedNames = visibleFields
-						.filter((f) => f !== field)
-						.map((f) => fieldsMap[f]?.name)
-						.filter((name) => name !== undefined)}
 					<label for={field} class="select w-full min-w-80">
 						<span class="label w-40">{ARTICLE_FIELDS[field]}</span>
 						<select
-							value={fieldsMap[field]?.name || ''}
+							value={fieldsMap[field]?.id || ''}
 							onchange={(e) => {
-								const selectedName = e.currentTarget.value;
-								if (!selectedName) {
+								const selectedId = e.currentTarget.value;
+								if (!selectedId) {
 									fieldsMap[field] = undefined;
 								} else {
-									const selectedField = bitableFields.find((bf) => bf.field_name === selectedName);
+									const selectedField = bitableFields.find((bf) => bf.field_id === selectedId);
 									if (selectedField) {
 										fieldsMap[field] = {
 											name: selectedField.field_name,
-											type: selectedField.type
+											type: selectedField.type,
+											id: selectedField.field_id
 										};
 									}
 								}
@@ -74,12 +88,65 @@
 							id={field}
 						>
 							<option value="">不保存</option>
-							{#each bitableFields.filter((bf) => !otherSelectedNames.includes(bf.field_name)) as bf (bf.field_id)}
-								<option value={bf.field_name}>{bf.field_name}</option>
+							{#each bitableFields as bf (bf.field_id)}
+								<option value={bf.field_id}>{bf.field_name}</option>
 							{/each}
 						</select>
 					</label>
 				{/each}
+
+				<!-- 业务字段映射（手动填写） -->
+				<div class="divider divider-start text-xs text-base-content/50">业务字段映射（手动填写）</div>
+				<div class="flex flex-col gap-3">
+					{#each form.manualFields || [] as manualField, index (manualField.id)}
+						<div class="flex items-center gap-2">
+							<input
+								type="text"
+								class="input input-sm flex-1"
+								placeholder="自定义显示名称 (如: 招聘类型)"
+								bind:value={manualField.label}
+							/>
+							<select
+								class="select select-sm flex-1"
+								value={manualField.columnId}
+								onchange={(e) => {
+									const selectedId = e.currentTarget.value;
+									const selectedField = bitableFields.find((bf) => bf.field_id === selectedId);
+									if (selectedField) {
+										manualField.columnId = selectedField.field_id;
+										manualField.columnName = selectedField.field_name;
+										manualField.type = selectedField.type;
+										// 如果是单选或多选，抓取选项
+										if (selectedField.type === 3 || selectedField.type === 4) {
+											manualField.options = selectedField.property?.options?.map(opt => ({
+												id: opt.id,
+												name: opt.name,
+												color: opt.color
+											}));
+										} else {
+											manualField.options = undefined;
+										}
+									}
+								}}
+							>
+								<option value="">对应表格列</option>
+								{#each bitableFields as bf (bf.field_id)}
+									<option value={bf.field_id}>{bf.field_name}</option>
+								{/each}
+							</select>
+							<button
+								type="button"
+								class="btn btn-ghost btn-sm btn-circle text-error"
+								onclick={() => removeManualField(index)}
+							>
+								✕
+							</button>
+						</div>
+					{/each}
+					<button type="button" class="btn btn-outline btn-sm border-dashed" onclick={addManualField}>
+						+ 添加业务字段
+					</button>
+				</div>
 			</div>
 		{:catch error}
 			<p class="label text-wrap">

@@ -107,14 +107,29 @@ declare global {
 
 	type SheetFormType = SheetFormWithDoc | SheetFormWithoutDoc;
 
+	interface BitableFieldOption {
+		id: string;
+		name: string;
+		color?: number;
+	}
+
+	interface BitableManualField {
+		id: string;
+		label: string;
+		columnId: string;
+		columnName: string;
+		type: number;
+		options?: BitableFieldOption[];
+	}
+
 	type BitableFieldsMapWithoutDoc = Record<
 		FetchedArticleField,
-		{ name: string; type: number } | undefined
+		{ name: string; type: number; id: string } | undefined
 	>;
 
 	type BitableFieldsMapWithDoc = Record<
 		FetchedArticleField | 'feishuDocUrl',
-		{ name: string; type: number } | undefined
+		{ name: string; type: number; id: string } | undefined
 	>;
 
 	interface BitableFormBase extends BaseFormType {
@@ -130,6 +145,10 @@ declare global {
 		 * 多维表格的数据表的 ID。
 		 */
 		tableId: string;
+		/**
+		 * 手动填写的业务字段配置
+		 */
+		manualFields?: BitableManualField[];
 	}
 
 	type BitableFormWithDoc = BitableFormBase & {
