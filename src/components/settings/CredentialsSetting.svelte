@@ -52,7 +52,10 @@
 	<fieldset class="mx-auto fieldset w-full rounded-box border border-base-300 bg-base-200 p-4">
 		<legend class="fieldset-legend">配置飞书访问凭证</legend>
 		<p class="label text-wrap">
-			如有疑问，请<a
+			进入 <a target="_blank" class="link link-neutral" href="https://open.feishu.cn/app"
+				>飞书开放平台
+			</a>
+			获取配置信息，如有疑问，请<a
 				target="_blank"
 				class="link link-neutral"
 				href="https://dkphhh.me/tools/send-to-feishu/">查看教程</a

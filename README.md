@@ -1,3 +1,7 @@
+# 保存到飞书
+
+![保存到飞书 Chrome 插件截图](./brand/保存到飞书banner1.png)
+
 [保存到飞书](https://chromewebstore.google.com/detail/okikdnfndhpkofekldmcgdneaajlahnb?utm_source=item-share-cb)是一款 Chrome 浏览器插件，可以将当前网页内容一键保存到飞书云文档中，完全免费开源，你可以在 [GitHub](https://github.com/dkphhh/send-to-feishu) 上找到它的源码。
 
 它可以：
@@ -15,6 +19,11 @@
 
 [保存到飞书 - Chrome 网上应用店](https://chromewebstore.google.com/detail/okikdnfndhpkofekldmcgdneaajlahnb?utm_source=item-share-cb)
 
-
 使用前，请先查看文档：
 [Chrome 浏览器插件「保存到飞书」使用说明](https://dkphhh.me/tools/send-to-feishu)
+
+---
+
+## TODO
+
+1. 增加一个保存为本地 markdown 文件的配置
