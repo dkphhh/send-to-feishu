@@ -107,45 +107,55 @@ async function sendToFeishuDoc(
  * @param {string} formId 表单配置的 ID
  * @returns {Promise<string>}  返回飞书中创建的内容的链接
  */
-export async function sendToFeishu(formId: string, articleData: FetchedArticle): Promise<string> {
+export async function sendToFeishu(
+	formId: string,
+	articleData: FetchedArticle,
+	manualValues?: Record<string, any>,
+	preCreatedDocUrl?: string,
+	onProgress?: (status: string) => void
+): Promise<string> {
 	const form = getForm(formId);
 
 	if (!form) {
 		throw new Error('表单配置未找到');
 	}
 
-	
-
 	switch (form.formType) {
 		case '电子表格': {
 			// 确认是否有关联的文档配置 id
 			if (!form.linkDocFormId) {
 				// 如果没有，直接发送到电子表格
+				onProgress?.('正在存入电子表格...');
 				const payload: SheetPayload = FeishuSheetManager.getPayload(form.fields, articleData);
 
 				return await sendToFeishuSheet(formId, payload);
 			} else {
-				// 如果有，先发送到飞书文档，再把文档链接发送到电子表格
-				const docForm = getForm(form.linkDocFormId);
+				let docUrl = preCreatedDocUrl;
+				if (!docUrl) {
+					// 如果没有预创建成功的 URL，再发送到飞书文档
+					const docForm = getForm(form.linkDocFormId);
 
-				if (!docForm) {
-					throw new Error('链接的文档表单未找到');
+					if (!docForm) {
+						throw new Error('链接的文档表单未找到');
+					}
+					if (docForm.formType !== '飞书文档') {
+						throw new Error('链接的文档表单类型错误');
+					}
+					// 创建文档
+					onProgress?.('正在生成飞书文档及处理图片...');
+					const { content, ...rest } = articleData;
+					docUrl = await sendToFeishuDoc(
+						docForm.id,
+						{
+							title: articleData.title,
+							content
+						},
+						rest
+					);
 				}
-				if (docForm.formType !== '飞书文档') {
-					throw new Error('链接的文档表单类型错误');
-				}
-				// 创建文档
-				const { content, ...rest } = articleData;
-				const docUrl = await sendToFeishuDoc(
-					docForm.id,
-					{
-						title: articleData.title,
-						content
-					},
-					rest
-				);
 
 				// 再向表格中添加内容
+				onProgress?.('正在存入电子表格...');
 				const payload: SheetPayload = FeishuSheetManager.getPayload(
 					form.fields,
 					articleData,
@@ -155,13 +165,29 @@ export async function sendToFeishu(formId: string, articleData: FetchedArticle):
 			}
 		}
 		case '多维表格': {
-			if (!form.linkDocFormId) {
-				const payload: BitablePayload = FeishuBitableManager.getPayload(
+			if (!credentials.tokenManager) {
+				throw new Error('未找到有效的凭据');
+			}
+
+			const bitableManager = new FeishuBitableManager(
+				credentials.tokenManager,
+				form.appToken,
+				form.tableId
+			);
+
+			// 获取 Payload 的辅助函数
+			const getPayload = (latestFields?: any) => {
+				return FeishuBitableManager.getPayload(
 					form.fieldsMap,
-					articleData
+					articleData,
+					form.manualFields,
+					manualValues,
+					latestFields || form.manualFields // 如果没有最新字段，退而求其次使用本地存的
 				);
-				return await sendToFeishuBitable(formId, payload);
-			} else {
+			};
+
+			let docUrl = preCreatedDocUrl;
+			if (!docUrl && form.linkDocFormId) {
 				const docForm = getForm(form.linkDocFormId);
 
 				if (!docForm) {
@@ -171,8 +197,9 @@ export async function sendToFeishu(formId: string, articleData: FetchedArticle):
 					throw new Error('链接的文档表单类型错误');
 				}
 				// 创建文档
+				onProgress?.('正在生成飞书文档及处理图片...');
 				const { content, ...rest } = articleData;
-				const docUrl = await sendToFeishuDoc(
+				docUrl = await sendToFeishuDoc(
 					docForm.id,
 					{
 						title: articleData.title,
@@ -180,18 +207,44 @@ export async function sendToFeishu(formId: string, articleData: FetchedArticle):
 					},
 					rest
 				);
+			}
 
-				// 再向多维表格中添加内容
-				const modifiedArticleData = { ...articleData, feishuDocUrl: docUrl };
+			// 尝试乐观发送
+			try {
+				onProgress?.('正在存入多维表格...');
+				const modifiedArticleData = docUrl ? { ...articleData, feishuDocUrl: docUrl } : articleData;
 				const payload: BitablePayload = FeishuBitableManager.getPayload(
 					form.fieldsMap,
-					modifiedArticleData
+					modifiedArticleData,
+					form.manualFields,
+					manualValues,
+					undefined // 默认不刷新，直接用本地缓存的字段定义
 				);
-
 				return await sendToFeishuBitable(formId, payload);
+			} catch (e: any) {
+				// 如果报错是字段不存在 (1254045) 或类似元数据错误，则刷新后重试
+				if (e.message?.includes('1254045') || e.code === 1254045) {
+					onProgress?.('检测到字段变化，正在刷新元数据并重试...');
+					console.log('检测到字段名变化，正在刷新元数据并重试...');
+					const latestFields = await FeishuBitableManager.getBitableFields(
+						form.appToken,
+						form.tableId
+					);
+					const modifiedArticleData = docUrl ? { ...articleData, feishuDocUrl: docUrl } : articleData;
+					const payload: BitablePayload = FeishuBitableManager.getPayload(
+						form.fieldsMap,
+						modifiedArticleData,
+						form.manualFields,
+						manualValues,
+						latestFields
+					);
+					return await sendToFeishuBitable(formId, payload);
+				}
+				throw e; // 其他错误正常抛出
 			}
 		}
 		case '飞书文档': {
+			onProgress?.('正在生成飞书文档及处理图片...');
 			const { content, ...rest } = articleData;
 			const payload: DocPayload = {
 				title: articleData.title,
