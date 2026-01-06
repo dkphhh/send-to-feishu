@@ -42,49 +42,25 @@
 	}>();
 
 	// 关闭对话框的 倒计时数字
-	let timeToCloseDialog = $state<number>(0);
+	// let timeToCloseDialog = $state<number>(0);
 
 	let manualValues = $state<Record<string, any>>({});
 
-	// 预创建文档的相关状态
-	let preCreatedDocPromise = $state<Promise<string> | null>(null);
-	let isDocReady = $state(false);
-	let docError = $state<string | null>(null);
+	const specialFieldId = $derived((form as BitableFormType)?.specialFieldId);
 
-	// 当文章内容提取完成后，如果有关联文档，则自动开始预创建
 	$effect(() => {
-		const bitableForm = form as any;
-		if (currentTabContentPromise && bitableForm?.linkDocFormId && !preCreatedDocPromise) {
-			currentTabContentPromise.then(content => {
-				const docForm = allForms.find(f => f.id === bitableForm.linkDocFormId);
-				if (docForm && docForm.formType === '飞书文档') {
-					preCreatedDocPromise = sendToFeishuDocOnly(docForm.id, content);
-					preCreatedDocPromise.then(() => {
-						isDocReady = true;
-					}).catch(err => {
-						docError = err instanceof Error ? err.message : String(err);
-						console.error('预创建文档失败:', err);
-					});
-				}
-			});
+		if (specialFieldId && !manualValues[specialFieldId]) {
+			manualValues[specialFieldId] = '尽快投递';
 		}
 	});
-
-	// 仅创建文档的辅助函数
-	async function sendToFeishuDocOnly(docFormId: string, articleData: FetchedArticle): Promise<string> {
-		const { content, ...rest } = articleData;
-		return await sendToFeishu(docFormId, {
-			...rest,
-			title: articleData.title,
-			content: content
-		});
-	}
 
 	// 弹窗相关状态
 	let activeField = $state<BitableManualField | null>(null);
 	let searchQuery = $state('');
 	let selectionModal = $state<HTMLDialogElement | null>(null);
 	let isSyncing = $state(false);
+
+	let sendingStatus = $state('');
 
 	const filteredOptions = $derived.by(() => {
 		if (!activeField || !activeField.options) return [];
@@ -151,10 +127,10 @@
 
 <Layout>
 	<div class="flex w-full flex-col items-center gap-4">
-		{#if !form}
+		{#if !form || !currentTabContentPromise}
 			<div class="container flex h-80 flex-row items-center justify-center">
 				<span class="loading loading-sm loading-spinner"></span>
-				<span class="ml-2">正在加载配置...</span>
+				<span class="ml-2">正在初始化...</span>
 			</div>
 		{:else}
 			{#await currentTabContentPromise}
@@ -239,14 +215,50 @@
 				<!-- 业务字段手动填写区 -->
 				{#if form.formType === '多维表格' && form.manualFields && form.manualFields.length > 0}
 					<div class="divider divider-start text-xs text-base-content/50">业务信息点选</div>
-					{#each form.manualFields as field (field.id)}
+					
+					<!-- 优先渲染特殊字段 -->
+					{#if specialFieldId}
+						{@const specialField = form.manualFields.find(f => f.id === specialFieldId)}
+						{#if specialField}
+							<label class="label font-semibold" for={specialField.id}>{specialField.label}</label>
+							<div class="relative w-full">
+								<input
+									id={specialField.id}
+									type={manualValues[specialField.id] && manualValues[specialField.id] !== '尽快投递' ? 'date' : 'text'}
+									class="input w-full"
+									value={manualValues[specialField.id] === '尽快投递' ? '尽快投递' : manualValues[specialField.id]}
+									onclick={(e) => {
+										if (manualValues[specialField.id] === '尽快投递') {
+											e.currentTarget.type = 'date';
+											e.currentTarget.showPicker();
+										}
+									}}
+									onchange={(e) => {
+										const val = e.currentTarget.value;
+										manualValues[specialField.id] = val || '尽快投递';
+										if (!val) {
+											e.currentTarget.type = 'text';
+										}
+									}}
+									onblur={(e) => {
+										if (!manualValues[specialField.id] || manualValues[specialField.id] === '尽快投递') {
+											e.currentTarget.type = 'text';
+										}
+									}}
+								/>
+							</div>
+						{/if}
+					{/if}
+
+					<!-- 渲染其他业务字段 -->
+					{#each form.manualFields.filter(f => f.id !== specialFieldId) as field (field.id)}
 						<label class="label font-semibold" for={field.id}>{field.label}</label>
 
 						{#if field.type === 3 || field.type === 4}
 							<!-- 单选或多选标签组 -->
 							<div class="flex flex-wrap gap-2">
 								{#each field.options || [] as option (option.id)}
-									{#if (manualValues[field.id] === option.name || (manualValues[field.id] || []).includes(option.name)) || (field.options || []).indexOf(option) < 5}
+									{#if (manualValues[field.id] === option.name || (manualValues[field.id] || []).includes(option.name)) || (field.options || []).indexOf(option) < 14}
 										{@const isSelected = field.type === 3 
 											? manualValues[field.id] === option.name 
 											: (manualValues[field.id] || []).includes(option.name)}
@@ -262,7 +274,7 @@
 									{/if}
 								{/each}
 
-								{#if (field.options || []).length > 5}
+								{#if (field.options || []).length > 14}
 									<button
 										type="button"
 										class="btn btn-sm btn-outline rounded-full border-dashed"
@@ -302,44 +314,37 @@
 				{/if}
 
 				<div class="flex flex-col gap-2 mt-4">
-					{#if (form as any).linkDocFormId && !isDocReady && !docError}
-						<div class="flex items-center gap-2 text-sm text-base-content/60 px-1">
-							<span class="loading loading-spinner loading-xs"></span>
-							飞书文档生成中，请稍候...
-						</div>
-					{:else if docError}
-						<div class="text-sm text-error px-1">
-							⚠️ 文档生成失败，点击发送将重新尝试
-						</div>
-					{/if}
-
 					<button
 						class="btn btn-primary w-full"
-						disabled={isLoading || !form || ((form as any).linkDocFormId && !isDocReady && !docError)}
+						disabled={isLoading || !form}
 						onclick={async () => {
 							if (!form) return;
 							isLoading = true;
 							sendingModal.showModal();
 							try {
-								timeToCloseDialog = 0; // 初始为0，不显示倒计时
-
+								sendingStatus = '正在提取文章内容...';
 								const articleData = await currentTabContentPromise;
 								if (!articleData) throw new Error('无法获取文章内容');
 
-								// 使用预创建的文档 URL（如果有的话）
-								let docUrl: string | undefined = undefined;
-								if (preCreatedDocPromise) {
-									try {
-										docUrl = await preCreatedDocPromise;
-									} catch (e) {
-										console.error('预创建文档使用失败，sendToFeishu 将重新尝试:', e);
-									}
+								// 如果有关联文档，显示对应状态
+								if ((form as any).linkDocFormId) {
+									sendingStatus = '正在生成飞书文档及处理图片...';
+								} else {
+									sendingStatus = '正在存入飞书...';
 								}
 
-								const finalResultUrl = await sendToFeishu(formId, articleData, $state.snapshot(manualValues), docUrl);
+								const finalResultUrl = await sendToFeishu(
+									formId, 
+									articleData, 
+									$state.snapshot(manualValues), 
+									undefined, 
+									(status) => { sendingStatus = status; }
+								);
+								
+								sendingStatus = '发送成功！';
 								result = {
-								type: 'success',
-								url: finalResultUrl
+									type: 'success',
+									url: finalResultUrl
 								};
 
 								// 成功后保留 2 秒
@@ -360,11 +365,7 @@
 							}
 						}}
 					>
-						{#if (form as any).linkDocFormId && !isDocReady && !docError}
-							等待文档生成...
-						{:else}
-							立即发送
-						{/if}
+						立即发送
 					</button>
 				</div>
 			</fieldset>
@@ -397,8 +398,10 @@
 	{#if isLoading}
 		<div class="modal-box">
 			<h3 class="text-lg font-bold">正在发送中……</h3>
-			<p class="py-2">
-				正在发送中，请勿关闭插件 <span class="loading loading-sm loading-dots"></span>
+			<p class="py-4 flex flex-col items-center gap-4">
+				<span class="loading loading-lg loading-spinner text-primary"></span>
+				<span class="text-base font-medium">{sendingStatus}</span>
+				<span class="text-xs text-base-content/50 text-center">正在处理中，请勿关闭插件</span>
 			</p>
 			<div class="modal-action">
 				<form method="dialog">

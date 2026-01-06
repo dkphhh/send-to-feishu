@@ -111,7 +111,8 @@ export async function sendToFeishu(
 	formId: string,
 	articleData: FetchedArticle,
 	manualValues?: Record<string, any>,
-	preCreatedDocUrl?: string
+	preCreatedDocUrl?: string,
+	onProgress?: (status: string) => void
 ): Promise<string> {
 	const form = getForm(formId);
 
@@ -124,6 +125,7 @@ export async function sendToFeishu(
 			// 确认是否有关联的文档配置 id
 			if (!form.linkDocFormId) {
 				// 如果没有，直接发送到电子表格
+				onProgress?.('正在存入电子表格...');
 				const payload: SheetPayload = FeishuSheetManager.getPayload(form.fields, articleData);
 
 				return await sendToFeishuSheet(formId, payload);
@@ -140,6 +142,7 @@ export async function sendToFeishu(
 						throw new Error('链接的文档表单类型错误');
 					}
 					// 创建文档
+					onProgress?.('正在生成飞书文档及处理图片...');
 					const { content, ...rest } = articleData;
 					docUrl = await sendToFeishuDoc(
 						docForm.id,
@@ -152,6 +155,7 @@ export async function sendToFeishu(
 				}
 
 				// 再向表格中添加内容
+				onProgress?.('正在存入电子表格...');
 				const payload: SheetPayload = FeishuSheetManager.getPayload(
 					form.fields,
 					articleData,
@@ -193,6 +197,7 @@ export async function sendToFeishu(
 					throw new Error('链接的文档表单类型错误');
 				}
 				// 创建文档
+				onProgress?.('正在生成飞书文档及处理图片...');
 				const { content, ...rest } = articleData;
 				docUrl = await sendToFeishuDoc(
 					docForm.id,
@@ -206,6 +211,7 @@ export async function sendToFeishu(
 
 			// 尝试乐观发送
 			try {
+				onProgress?.('正在存入多维表格...');
 				const modifiedArticleData = docUrl ? { ...articleData, feishuDocUrl: docUrl } : articleData;
 				const payload: BitablePayload = FeishuBitableManager.getPayload(
 					form.fieldsMap,
@@ -218,6 +224,7 @@ export async function sendToFeishu(
 			} catch (e: any) {
 				// 如果报错是字段不存在 (1254045) 或类似元数据错误，则刷新后重试
 				if (e.message?.includes('1254045') || e.code === 1254045) {
+					onProgress?.('检测到字段变化，正在刷新元数据并重试...');
 					console.log('检测到字段名变化，正在刷新元数据并重试...');
 					const latestFields = await FeishuBitableManager.getBitableFields(
 						form.appToken,
@@ -237,6 +244,7 @@ export async function sendToFeishu(
 			}
 		}
 		case '飞书文档': {
+			onProgress?.('正在生成飞书文档及处理图片...');
 			const { content, ...rest } = articleData;
 			const payload: DocPayload = {
 				title: articleData.title,

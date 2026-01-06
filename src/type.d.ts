@@ -149,6 +149,10 @@ declare global {
 		 * 手动填写的业务字段配置
 		 */
 		manualFields?: BitableManualField[];
+		/**
+		 * 特殊字段 ID（默认“尽快投递”+日历控件）
+		 */
+		specialFieldId?: string;
 	}
 
 	type BitableFormWithDoc = BitableFormBase & {

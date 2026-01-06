@@ -152,6 +152,7 @@ class ImageProcessingError extends Error {
 const isImageProcessingError = (error: unknown): error is ImageProcessingError =>
 	error instanceof ImageProcessingError;
 
+const IMAGE_DOWNLOAD_CONCURRENCY = 4;
 const IMAGE_UPLOAD_CONCURRENCY = 4;
 const IMAGE_REPLACE_CONCURRENCY = 4;
 
@@ -637,7 +638,7 @@ export class FeishuDocManager {
 			Authorization: `Bearer ${await this.tokenManager.getToken()}`,
 			'Content-Type': 'application/json; charset=utf-8'
 		};
-		const BATCH_LIMIT = 200;
+		const BATCH_LIMIT = 20;
 		const batches: ImageReplacementPayload[][] = [];
 		for (let i = 0; i < replacements.length; i += BATCH_LIMIT) {
 			batches.push(replacements.slice(i, i + BATCH_LIMIT));
@@ -771,7 +772,7 @@ export class FeishuDocManager {
 		}
 
 		let pointer = 0;
-		const concurrency = Math.max(1, Math.min(IMAGE_UPLOAD_CONCURRENCY, validEntries.length));
+		const concurrency = Math.max(1, Math.min(IMAGE_DOWNLOAD_CONCURRENCY, validEntries.length));
 		const worker = async (): Promise<void> => {
 			while (true) {
 				const currentIndex = pointer++;
