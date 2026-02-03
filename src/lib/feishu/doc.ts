@@ -428,7 +428,7 @@ export class FeishuDocManager {
 			} else {
 				const decoded = decodeURIComponent(dataPart);
 				const encoder = new TextEncoder();
-				buffer = encoder.encode(decoded).buffer;
+				buffer = encoder.encode(decoded).buffer as ArrayBuffer;
 			}
 			const dimensions = await this.getImageDimensionsFromBuffer(buffer, mimeType);
 			return {

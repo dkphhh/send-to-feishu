@@ -60,6 +60,10 @@ declare global {
 		url: string;
 
 		/**
+		 * 文章的保存时间
+		 */
+		saveAt: string;
+		/**
 		 * 文章的内容，markdown 格式
 		 *
 		 * @type {string}
@@ -86,7 +90,7 @@ declare global {
 		/**
 		 * 表单类型名称
 		 */
-		formType: '电子表格' | '多维表格' | '飞书文档';
+		formType: '电子表格' | '多维表格' | '飞书文档' | '下载为 Markdown';
 	}
 	interface SheetFormTypeBase extends BaseFormType {
 		formType: '电子表格';
@@ -132,6 +136,28 @@ declare global {
 		tableId: string;
 	}
 
+	interface DownLoadMarkdownFormType extends BaseFormType {
+		/**
+		 * 表单类型名称
+		 */
+		formType: '下载为 Markdown';
+
+		/**
+		 * 保存到文章开头的 YAML 字段
+		 */
+		fields: FetchedArticleField[];
+
+		/**
+		 * 保存的文件名模板
+		 */
+		fileNameTemplate: (FetchedArticleField | 'customString')[];
+
+		/**
+		 * 自定义文件名字符串
+		 */
+		customFileNameString: string;
+	}
+
 	type BitableFormWithDoc = BitableFormBase & {
 		/**
 		 * 关联的飞书文档配置 ID，如果有，会将文章内容保存到飞书文档。
@@ -158,7 +184,7 @@ declare global {
 		folderToken: string;
 	}
 
-	type FormType = SheetFormType | BitableFormType | DocFromType;
+	type FormType = SheetFormType | BitableFormType | DocFromType | DownLoadMarkdownFormType;
 
 	type Forms = FormType[];
 

@@ -5,17 +5,44 @@
 	import { allForms } from '@/components/forms/forms.svelte';
 	import { extractWebArticle } from '@/lib/extract';
 	import { stringifyDate } from '@/lib/utils';
+	import { onMount } from 'svelte';
+	import { DownLoadMarkdownManager } from '@/lib/down-load-markdown';
 
 	const searchParams = new URL(window.location.toString()).searchParams;
 	const formId = searchParams.get('formId') as string;
 
 	const form = $derived.by(() => allForms.find((f) => f.id === formId)!);
 
-	let isLoading: boolean = $state(false);
+	let isSentLoading: boolean = $state(false);
 
-	let currentTabContent = $derived.by(async () => {
-		const { html, url } = await getCurrentTabContent();
-		return await extractWebArticle(html, url);
+	let isLoadingArticle: boolean = $state(true);
+
+	let isLoadingArticleError: boolean = $state(false);
+
+	let loadingArticleError: unknown = $state(null);
+
+	let currentTabContent: FetchedArticle | undefined = $state(undefined);
+
+	let fileNamePreview: string = $derived.by(() => {
+		if (form.formType !== '下载为 Markdown') return '';
+		const m = new DownLoadMarkdownManager(
+			form.fields,
+			form.fileNameTemplate,
+			form.customFileNameString
+		);
+		return m.generateFileName(currentTabContent!);
+	});
+
+	onMount(async () => {
+		try {
+			const { html, url } = await getCurrentTabContent();
+			currentTabContent = await extractWebArticle(html, url);
+		} catch (e) {
+			isLoadingArticleError = true;
+			loadingArticleError = e;
+		} finally {
+			isLoadingArticle = false;
+		}
 	});
 
 	const visibleFields = $derived.by(() => {
@@ -24,6 +51,8 @@
 		} else if (form.formType === '多维表格') {
 			const map = (form as BitableFormType).fieldsMap;
 			return new Set(Object.keys(map).filter((k) => map[k as keyof typeof map]));
+		} else if (form.formType === '下载为 Markdown') {
+			return new Set((form as DownLoadMarkdownFormType).fields);
 		}
 		return null;
 	});
@@ -41,11 +70,34 @@
 
 <Layout>
 	<div class="flex w-full flex-col items-center gap-4">
-		{#await currentTabContent}
+		{#if isLoadingArticle}
 			<div class="container flex h-80 flex-row items-center justify-center">
 				<span class="loading loading-sm loading-spinner"></span>
 			</div>
-		{:then content}
+		{:else if isLoadingArticleError}
+			{@const normalErrorMessage =
+				loadingArticleError instanceof Error
+					? loadingArticleError.message
+					: String(loadingArticleError)}
+			{@const freshPageMessage =
+				normalErrorMessage.includes('Receiving end does not exist') ||
+				normalErrorMessage.includes('Could not establish connection')
+					? '无法连接到当前页面，请刷新当前标签页后重试，或检查当前页面是否支持该扩展。'
+					: ''}
+			{@const errorMessage = freshPageMessage || normalErrorMessage}
+			<div class="mx-4 mt-8 flex h-full w-full flex-col items-center gap-4">
+				<p class="w-full text-sm font-semibold text-wrap text-error">
+					获取文章失败：{errorMessage}
+				</p>
+
+				<button
+					class="btn rounded-2xl"
+					onclick={() => {
+						window.location.reload();
+					}}>点击重试</button
+				>
+			</div>
+		{:else if currentTabContent}
 			<fieldset class="fieldset w-full rounded-box border border-base-300 bg-base-200 p-4">
 				<legend class="fieldset-legend">保存到：{form.icon + ' ' + form.name}</legend>
 
@@ -55,7 +107,7 @@
 						id="articleTitle"
 						type="text"
 						class="input w-full"
-						bind:value={content.title}
+						bind:value={currentTabContent.title}
 						placeholder="文章标题"
 					/>
 				{/if}
@@ -66,7 +118,7 @@
 						id="articleAuthor"
 						type="text"
 						class="input w-full"
-						bind:value={content.author}
+						bind:value={currentTabContent.author}
 						placeholder="文章作者"
 					/>
 				{/if}
@@ -77,7 +129,7 @@
 						id="articleDescription"
 						type="text"
 						class="input w-full"
-						bind:value={content.description}
+						bind:value={currentTabContent.description}
 						placeholder="文章描述"
 					/>
 				{/if}
@@ -88,10 +140,11 @@
 						id="articleDatetime"
 						type="datetime-local"
 						class="input w-full"
-						value={stringifyDate(content.published)}
+						value={stringifyDate(currentTabContent.published)}
 						onchange={(event) => {
+							if (!currentTabContent) return;
 							const date = new Date((event.currentTarget as HTMLInputElement).value);
-							content.published = stringifyDate(date);
+							currentTabContent.published = stringifyDate(date);
 						}}
 						placeholder="文章发布时间"
 					/>
@@ -103,7 +156,7 @@
 						id="articleSource"
 						type="text"
 						class="input w-full"
-						bind:value={content.source}
+						bind:value={currentTabContent.source}
 						placeholder="文章来源"
 					/>
 				{/if}
@@ -114,21 +167,43 @@
 						id="articleUrl"
 						type="text"
 						class="input w-full"
-						bind:value={content.url}
+						bind:value={currentTabContent.url}
 						placeholder="文章链接"
 					/>
 				{/if}
 
+				{#if visibleFields === null || visibleFields.has('saveAt')}
+					<label for="saveAt" class="label">保存时间</label>
+					<input
+						id="saveAt"
+						type="datetime-local"
+						class="input w-full"
+						bind:value={currentTabContent.saveAt}
+						onchange={(event) => {
+							if (!currentTabContent) return;
+							const date = new Date((event.currentTarget as HTMLInputElement).value);
+							currentTabContent.saveAt = stringifyDate(date);
+						}}
+						placeholder="文章保存时间"
+					/>
+				{/if}
+
+				{#if form.formType === '下载为 Markdown'}
+					<label for="fileName" class="label">文件名预览</label>
+					<p class="w-full text-sm">{fileNamePreview}</p>
+				{/if}
+
 				<button
 					class="btn mt-4 btn-primary"
-					disabled={isLoading}
+					disabled={isSentLoading}
 					onclick={async () => {
-						isLoading = true;
+						if (!currentTabContent) return;
+						isSentLoading = true;
 						sendingModal.showModal();
 						try {
 							result = {
 								type: 'success',
-								url: await sendToFeishu(formId, content)
+								url: await sendToFeishu(formId, currentTabContent)
 							};
 
 							setTimeout(() => {
@@ -149,37 +224,17 @@
 								errorMessage: `发送文章失败：${(e as Error).message}`
 							};
 						} finally {
-							isLoading = false;
+							isSentLoading = false;
 						}
 					}}>发送</button
 				>
 			</fieldset>
-		{:catch error}
-			{@const normalErrorMessage = error instanceof Error ? error.message : String(error)}
-			{@const freshPageMessage =
-				normalErrorMessage.includes('Receiving end does not exist') ||
-				normalErrorMessage.includes('Could not establish connection')
-					? '无法连接到当前页面，请刷新当前标签页后重试，或检查当前页面是否支持该扩展。'
-					: ''}
-			{@const errorMessage = freshPageMessage || normalErrorMessage}
-			<div class="mx-4 mt-8 flex h-full w-full flex-col items-center gap-4">
-				<p class="w-full text-sm font-semibold text-wrap text-error">
-					获取文章失败：{errorMessage}
-				</p>
-
-				<button
-					class="btn rounded-2xl"
-					onclick={() => {
-						window.location.reload();
-					}}>点击重试</button
-				>
-			</div>
-		{/await}
+		{/if}
 	</div>
 </Layout>
 
 <dialog id="sendingModal" class="modal" bind:this={sendingModal}>
-	{#if isLoading}
+	{#if isSentLoading}
 		<div class="modal-box">
 			<h3 class="text-lg font-bold">正在发送中……</h3>
 			<p class="py-2">
@@ -195,8 +250,12 @@
 		<div class="modal-box">
 			<h3 class="text-lg font-bold">发送成功</h3>
 			<p class="py-2">
-				点击<a target="_blank" href={result.url} class="link-success">链接</a>
-				查看结果。<span class=" font-bold">对话框将在 {timeToCloseDialog} 秒后关闭</span>。
+				{#if result.url}
+					点击<a target="_blank" href={result.url} class="link-success">链接</a>
+					查看结果。<span class=" font-bold">对话框将在 {timeToCloseDialog} 秒后关闭</span>。
+				{:else}
+					文件下载成功。<span class=" font-bold">对话框将在 {timeToCloseDialog} 秒后关闭</span>。
+				{/if}
 			</p>
 			<div class="modal-action">
 				<form method="dialog">

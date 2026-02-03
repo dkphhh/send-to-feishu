@@ -1,7 +1,8 @@
 export const FORM_ICONS: Record<FormTypeName, string> = {
 	多维表格: '🗂️',
 	电子表格: '📊',
-	飞书文档: '🗒️'
+	飞书文档: '🗒️',
+	'下载为 Markdown': '📄'
 };
 
 export const ARTICLE_FIELDS: Record<FetchedArticleField | 'feishuDocUrl', string> = {
@@ -11,7 +12,8 @@ export const ARTICLE_FIELDS: Record<FetchedArticleField | 'feishuDocUrl', string
 	author: '作者',
 	source: '来源',
 	description: '描述',
-	feishuDocUrl: '飞书文档链接'
+	feishuDocUrl: '飞书文档链接',
+	saveAt: '保存时间'
 };
 
 export const SHEET_STEP_TITLES = [
@@ -38,3 +40,7 @@ export type BitableStep = (typeof BITABLE_STEP_TITLES)[number];
 export const DOC_STEP_TITLES = ['填写文件夹链接', '起个名字'];
 
 export type DocStep = (typeof DOC_STEP_TITLES)[number];
+
+export const DOWNLOAD_MARKDOWN_STEP_TITLES = ['选择YAML字段', '配置文件名', '起个名字'] as const;
+
+export type DownloadMarkdownStep = (typeof DOWNLOAD_MARKDOWN_STEP_TITLES)[number];

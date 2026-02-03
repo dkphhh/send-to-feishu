@@ -15,10 +15,11 @@
 	<div tabindex="0" role="button" class="btn m-1 rounded-2xl">🆕 新建配置</div>
 	<ul
 		tabindex="-1"
-		class="dropdown-content menu z-1 w-32 gap-2 rounded-box bg-base-100 p-2 shadow-sm"
+		class="dropdown-content menu z-1 w-48 gap-2 rounded-box bg-base-100 p-2 shadow-sm"
 	>
 		{@render createNewForm('电子表格')}
 		{@render createNewForm('多维表格')}
 		{@render createNewForm('飞书文档')}
+		{@render createNewForm('下载为 Markdown')}
 	</ul>
 </div>

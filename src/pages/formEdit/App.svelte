@@ -3,8 +3,10 @@
 	import SheetFormSetting from '@/components/forms/sheet/SheetFormSetting.svelte';
 	import BitableFormSetting from '@/components/forms/bitable/BitableFormSetting.svelte';
 	import DocFormSetting from '@/components/forms/feishuDoc/DocFormSetting.svelte';
+	import DownLoadMarkdownFormSetting from '@/components/forms/down-load-markdown/DownLoadMarkdownFormSetting.svelte';
 	import { getForm } from '@/components/forms/forms.svelte';
 	import { getPagePath } from '@/lib/utils';
+
 	const searchParams = new URL(window.location.toString()).searchParams;
 	const formId = searchParams.get('formId');
 	let form = $derived(formId ? getForm(formId) : null);
@@ -23,5 +25,7 @@
 		<BitableFormSetting {form} />
 	{:else if form.formType === '飞书文档'}
 		<DocFormSetting {form} />
+	{:else if form.formType === '下载为 Markdown'}
+		<DownLoadMarkdownFormSetting {form} />
 	{/if}
 </Layout>

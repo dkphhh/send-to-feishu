@@ -1,5 +1,6 @@
 import { extractFromHtml } from '@extractus/article-extractor';
 import TurndownService from 'turndown';
+import { stringifyDate } from './utils';
 
 /**
  * 一个将 html 转化为 markdown 的 constructor 实例
@@ -27,6 +28,8 @@ export async function extractWebArticle(htmlString: string, url: string): Promis
 		throw Error('文章内容为空');
 	}
 
+	console.log('');
+
 	// 如果能抓取，就获取文章内容并在开头附上 YAML 格式的 metadata
 	const metadata = {
 		title: article.title ?? '',
@@ -34,6 +37,7 @@ export async function extractWebArticle(htmlString: string, url: string): Promis
 		description: article.description ?? '',
 		published: article.published ?? '',
 		source: article.source ?? '',
+		saveAt: stringifyDate(new Date()),
 		url
 	};
 

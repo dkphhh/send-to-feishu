@@ -1,11 +1,10 @@
 import { getForm } from '../components/forms/forms.svelte';
 import { credentials } from '../components/settings/settings.svelte';
 import { FeishuBitableManager, type BitablePayload } from '@/lib/feishu/bitable';
-
+import { DownLoadMarkdownManager } from './down-load-markdown';
 import { FeishuDocManager, type DocPayload } from '@/lib/feishu/doc';
 
 import { FeishuSheetManager, type SheetPayload } from '@/lib/feishu/sheet';
-
 
 async function sendToFeishuSheet(formId: string, payload: SheetPayload) {
 	if (!credentials.tokenManager) {
@@ -98,6 +97,25 @@ async function sendToFeishuDoc(
 	return docUrl;
 }
 
+async function saveMarkdownFile(formId: string, article: FetchedArticle) {
+	const form = getForm(formId);
+
+	if (!form) {
+		throw new Error('表单配置未找到');
+	}
+	if (form.formType !== '下载为 Markdown') {
+		throw new Error('表单配置类型错误');
+	}
+
+	const manager = new DownLoadMarkdownManager(
+		form.fields,
+		form.fileNameTemplate,
+		form.customFileNameString
+	);
+
+	await manager.saveArticle(article);
+}
+
 /**
  * 将浏览器当前 tab 的文章内容发送到飞书
  * @author dkphhh
@@ -107,14 +125,15 @@ async function sendToFeishuDoc(
  * @param {string} formId 表单配置的 ID
  * @returns {Promise<string>}  返回飞书中创建的内容的链接
  */
-export async function sendToFeishu(formId: string, articleData: FetchedArticle): Promise<string> {
+export async function sendToFeishu(
+	formId: string,
+	articleData: FetchedArticle
+): Promise<string | undefined> {
 	const form = getForm(formId);
 
 	if (!form) {
 		throw new Error('表单配置未找到');
 	}
-
-	
 
 	switch (form.formType) {
 		case '电子表格': {
@@ -198,6 +217,11 @@ export async function sendToFeishu(formId: string, articleData: FetchedArticle):
 				content
 			};
 			return await sendToFeishuDoc(formId, payload as DocPayload, rest);
+		}
+
+		case '下载为 Markdown': {
+			await saveMarkdownFile(formId, articleData);
+			break;
 		}
 
 		default:

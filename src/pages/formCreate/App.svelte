@@ -2,6 +2,7 @@
 	import Layout from '@/components/layout/Layout.svelte';
 	import SheetFormCreate from '@/components/forms/sheet/SheetFormCreate.svelte';
 	import BitableFormCreate from '@/components/forms/bitable/BitableFormCreate.svelte';
+	import DownLoadMarkdownFormCreate from '@/components/forms/down-load-markdown/DownLoadMarkdownFormCreate.svelte';
 	import DocFormCreate from '@/components/forms/feishuDoc/DocFormCreate.svelte';
 	const searchParams = new URL(window.location.toString()).searchParams;
 	const formTypeName = searchParams.get('type') as FormTypeName;
@@ -14,5 +15,7 @@
 		<BitableFormCreate />
 	{:else if formTypeName == '飞书文档'}
 		<DocFormCreate />
+	{:else if formTypeName == '下载为 Markdown'}
+		<DownLoadMarkdownFormCreate />
 	{/if}
 </Layout>
