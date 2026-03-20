@@ -38,7 +38,8 @@ export async function extractWebArticle(htmlString: string, url: string): Promis
 		published: article.published ?? '',
 		source: article.source ?? '',
 		saveAt: stringifyDate(new Date()),
-		url
+		url,
+		tag: ''
 	};
 
 	const markdownText = turndownService.turndown(article.content as string);

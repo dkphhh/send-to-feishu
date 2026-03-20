@@ -13,7 +13,8 @@ export const ARTICLE_FIELDS: Record<FetchedArticleField | 'feishuDocUrl', string
 	source: '来源',
 	description: '描述',
 	feishuDocUrl: '飞书文档链接',
-	saveAt: '保存时间'
+	saveAt: '保存时间',
+	tag: '标签'
 };
 
 export const SHEET_STEP_TITLES = [

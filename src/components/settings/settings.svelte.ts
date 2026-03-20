@@ -14,6 +14,11 @@ class Credentials {
 	 */
 	feishuBaseUrl: string = $state('');
 
+	/**
+	 * 保存后是否自动关闭侧边栏。
+	 */
+	autoCloseAfterSave: boolean = $state(false);
+
 	tokenManager: FeishuToken | undefined = undefined;
 
 	async set(feishuAppId: string, feishuAppSecret: string, feishuBaseUrl: string) {
@@ -29,15 +34,22 @@ class Credentials {
 		});
 	}
 
+	async setAutoCloseAfterSave(value: boolean) {
+		this.autoCloseAfterSave = value;
+		await chrome.storage.local.set({ autoCloseAfterSave: value });
+	}
+
 	async get() {
 		const result = await chrome.storage.local.get([
 			'feishuAppId',
 			'feishuAppSecret',
-			'feishuBaseUrl'
+			'feishuBaseUrl',
+			'autoCloseAfterSave'
 		]);
 		this.feishuAppId = (result.feishuAppId as string) || '';
 		this.feishuAppSecret = (result.feishuAppSecret as string) || '';
 		this.feishuBaseUrl = (result.feishuBaseUrl as string) || '';
+		this.autoCloseAfterSave = (result.autoCloseAfterSave as boolean) || false;
 	}
 
 	async init() {
