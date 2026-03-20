@@ -4,7 +4,6 @@
 	let feishuAppId = $derived(credentials.feishuAppId);
 	let feishuAppSecret = $derived(credentials.feishuAppSecret);
 	let feishuBaseUrl = $derived(credentials.feishuBaseUrl);
-	let autoCloseAfterSave = $derived(credentials.autoCloseAfterSave);
 
 	async function handleSave() {
 		try {
@@ -105,22 +104,5 @@
 			}}
 			class="btn mt-4 rounded-2xl btn-primary">开通权限</button
 		>
-	</fieldset>
-</div>
-
-<div class="container mx-auto mt-4">
-	<fieldset class="mx-auto fieldset w-full rounded-box border border-base-300 bg-base-200 p-4">
-		<legend class="fieldset-legend">偏好设置</legend>
-		<label class="label cursor-pointer justify-start gap-4">
-			<input
-				type="checkbox"
-				class="toggle toggle-primary"
-				checked={autoCloseAfterSave}
-				onchange={async (e) => {
-					await credentials.setAutoCloseAfterSave((e.currentTarget as HTMLInputElement).checked);
-				}}
-			/>
-			<span class="label-text">保存后自动关闭侧边栏</span>
-		</label>
 	</fieldset>
 </div>

@@ -63,14 +63,6 @@ declare global {
 		 * 文章的保存时间
 		 */
 		saveAt: string;
-
-		/**
-		 * 文章标签
-		 *
-		 * @type {string}
-		 */
-		tag: string;
-
 		/**
 		 * 文章的内容，markdown 格式
 		 *

@@ -3,11 +3,10 @@
 	import { sendToFeishu } from '@/lib/sender';
 	import { getCurrentTabContent, gotoPage } from '@/lib/utils';
 	import { allForms } from '@/components/forms/forms.svelte';
-	import { extractWebArticle, extractBasicInfo } from '@/lib/extract';
+	import { extractWebArticle } from '@/lib/extract';
 	import { stringifyDate } from '@/lib/utils';
 	import { onMount } from 'svelte';
 	import { DownLoadMarkdownManager } from '@/lib/down-load-markdown';
-	import { credentials } from '@/components/settings/settings.svelte';
 
 	const searchParams = new URL(window.location.toString()).searchParams;
 	const formId = searchParams.get('formId') as string;
@@ -37,17 +36,7 @@
 	onMount(async () => {
 		try {
 			const { html, url } = await getCurrentTabContent();
-			try {
-				currentTabContent = await extractWebArticle(html, url);
-			} catch (extractError) {
-				// 对于不需要文章正文内容的表单类型（多维表格、电子表格），
-				// 当完整抓取失败时降级为仅提取标题和链接
-				if (form.formType === '多维表格' || form.formType === '电子表格') {
-					currentTabContent = extractBasicInfo(html, url);
-				} else {
-					throw extractError;
-				}
-			}
+			currentTabContent = await extractWebArticle(html, url);
 		} catch (e) {
 			isLoadingArticleError = true;
 			loadingArticleError = e;
@@ -199,17 +188,6 @@
 					/>
 				{/if}
 
-				{#if visibleFields === null || visibleFields.has('tag')}
-					<label for="articleTag" class="label">标签</label>
-					<input
-						id="articleTag"
-						type="text"
-						class="input w-full"
-						bind:value={currentTabContent.tag}
-						placeholder="文章标签"
-					/>
-				{/if}
-
 				{#if form.formType === '下载为 Markdown'}
 					<label for="fileName" class="label">文件名预览</label>
 					<p class="w-full text-sm">{fileNamePreview}</p>
@@ -228,25 +206,18 @@
 								url: await sendToFeishu(formId, currentTabContent)
 							};
 
-							if (credentials.autoCloseAfterSave) {
-								setTimeout(() => {
-									window.close();
-								}, 1500);
-								timeToCloseDialog = 1;
-							} else {
-								setTimeout(() => {
-									sendingModal.close();
-									gotoPage('index');
-								}, 3000);
-								//关闭对话框的 倒计时数字
-								timeToCloseDialog = 3;
-								const interval = setInterval(() => {
-									timeToCloseDialog -= 1;
-									if (timeToCloseDialog <= 0) {
-										clearInterval(interval);
-									}
-								}, 1000);
-							}
+							setTimeout(() => {
+								sendingModal.close();
+								gotoPage('index');
+							}, 3000);
+							//关闭对话框的 倒计时数字
+							timeToCloseDialog = 3;
+							const interval = setInterval(() => {
+								timeToCloseDialog -= 1;
+								if (timeToCloseDialog <= 0) {
+									clearInterval(interval);
+								}
+							}, 1000);
 						} catch (e) {
 							result = {
 								type: 'error',
