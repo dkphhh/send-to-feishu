@@ -59,7 +59,9 @@
 	<div class="flex flex-col items-center gap-4">
 		{#if allForms.length === 0}
 			<div class="mt-4 text-sm font-semibold opacity-60">点击下方按钮新建配置⬇️</div>
+			<CreateFormButton />
 		{:else}
+			<CreateFormButton />
 			<ul class="list w-full rounded-box border border-base-300 bg-base-100 shadow-md">
 				<li class="p-4 pb-2 text-sm font-semibold tracking-wide opacity-60">编辑保存方案</li>
 				{#each allForms as form, index (form.id)}
@@ -67,6 +69,5 @@
 				{/each}
 			</ul>
 		{/if}
-		<CreateFormButton />
 	</div>
 </Layout>

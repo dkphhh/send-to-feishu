@@ -25,7 +25,16 @@ export class DownLoadMarkdownManager {
 			if (field === 'customString') {
 				parts.push(this.customFileNameString);
 			} else {
-				const value = article[field];
+				let value = article[field];
+
+				// 保证时间格式一致
+				if (field === 'published' || field === 'saveAt') {
+					const dateValue = article[field];
+					if (dateValue) {
+						value = stringifyDate(dateValue);
+					}
+				}
+
 				if (value) {
 					parts.push(
 						value
@@ -42,11 +51,12 @@ export class DownLoadMarkdownManager {
 	private generateYAMLFrontMatter(article: FetchedArticle): string {
 		const yamlData: Record<string, string> = {};
 		for (const field of this.yamlFields) {
-			if (field === 'published') {
-				const publishedValue = article[field];
-				if (publishedValue) {
+			// 保证时间格式一致
+			if (field === 'published' || field === 'saveAt') {
+				const dateValue = article[field];
+				if (dateValue) {
 					// 如果有发布时间字段，就格式化日期
-					const d = stringifyDate(publishedValue);
+					const d = stringifyDate(dateValue);
 					yamlData[ARTICLE_FIELDS[field]] = d;
 					continue;
 				}

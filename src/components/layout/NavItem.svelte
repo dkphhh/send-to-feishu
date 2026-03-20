@@ -3,8 +3,8 @@
 	let { path, name, disabled = false }: { path: PageType; name: string; disabled?: boolean } =
 		$props();
 	const currentPath = getCurrentPath();
-	const pagePath = getPagePath(path);
-	const isCurrentPage = currentPath === pagePath;
+	const pagePath = $derived(getPagePath(path));
+	const isCurrentPage = $derived(currentPath === pagePath);
 </script>
 
 <a

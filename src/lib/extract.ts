@@ -35,7 +35,7 @@ export async function extractWebArticle(htmlString: string, url: string): Promis
 		title: article.title ?? '',
 		author: article.author ?? '',
 		description: article.description ?? '',
-		published: article.published ?? '',
+		published: article.published ? stringifyDate(article.published) : '',
 		source: article.source ?? '',
 		saveAt: stringifyDate(new Date()),
 		url

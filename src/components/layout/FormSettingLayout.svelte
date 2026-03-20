@@ -12,7 +12,7 @@
 		children: Snippet;
 	} = $props();
 
-	let isCreateMode = !form.name || form.name.trim() === '';
+	let isCreateMode = $derived(!form.name || form.name.trim() === '');
 
 	async function handleSave() {
 		if (!isComplete) {

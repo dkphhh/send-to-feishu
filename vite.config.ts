@@ -9,7 +9,7 @@ import zip from 'vite-plugin-zip-pack';
 import manifest from './manifest.config';
 import { name, version } from './package.json';
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
 	resolve: {
 		alias: {
 			'@': `${path.resolve(__dirname, 'src')}`
@@ -19,7 +19,7 @@ export default defineConfig({
 		tailwindcss(),
 		svelte({
 			compilerOptions: {
-				dev: true
+				dev: command === 'serve'
 			}
 		}),
 		crx({ manifest }),
@@ -47,4 +47,4 @@ export default defineConfig({
 			}
 		}
 	}
-});
+}));
