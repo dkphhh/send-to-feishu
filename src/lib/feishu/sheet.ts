@@ -2,7 +2,7 @@
 import { stringifyDate } from '../utils';
 import { FeishuToken } from './feishu-token-manager';
 export type SheetPayload = Array<Array<string | { text: string; link: string; type: 'url' }>>;
-import { credentials } from '@/components/settings/settings.svelte';
+import { credentials } from '@/components/settings/settingState.svelte.js';
 import { getNodeToken } from './get-node-token';
 
 export class FeishuSheetManager {

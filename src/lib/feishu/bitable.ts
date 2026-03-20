@@ -1,6 +1,6 @@
 // API 参考文档 https://open.feishu.cn/document/server-docs/docs/bitable-v1/app-table-record/create?appId=cli_a7a5d48eeab81013
 import { FeishuToken } from './feishu-token-manager';
-import { credentials } from '@/components/settings/settings.svelte';
+import { credentials } from '@/components/settings/settingState.svelte.js';
 import { getNodeToken } from './get-node-token';
 export type BitablePayload = Record<string, string | number | { text: string; link: string }>;
 export type BitableFieldsData = {

@@ -1,0 +1,21 @@
+{
+	"$schema": "./node_modules/oxfmt/configuration_schema.json",
+	"useTabs": true,
+	"singleQuote": true,
+	"trailingComma": "none",
+	"printWidth": 100,
+	"sortTailwindcss": {
+		"stylesheet": "./src/style.css"
+	},
+	"sortPackageJson": false,
+	"ignorePatterns": [
+		"package-lock.json",
+		"pnpm-lock.yaml",
+		"yarn.lock",
+		"bun.lock",
+		"bun.lockb",
+		"/static/",
+		"/drizzle/",
+		"src/lib/paraglide"
+	]
+}

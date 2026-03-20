@@ -1,5 +1,5 @@
 import { getForm } from '../components/forms/forms.svelte';
-import { credentials } from '../components/settings/settings.svelte';
+import { credentials } from '../components/settings/settingState.svelte.js';
 import { FeishuBitableManager, type BitablePayload } from '@/lib/feishu/bitable';
 import { DownLoadMarkdownManager } from './down-load-markdown';
 import { FeishuDocManager, type DocPayload } from '@/lib/feishu/doc';

@@ -57,14 +57,74 @@ class Credentials {
 		}
 	}
 
+
+
+
 	// 检查凭据是否完整
 	get isValid() {
 		return !!(this.feishuAppId && this.feishuAppSecret && this.feishuBaseUrl);
 	}
 }
 
-export const credentials = await (async () => {
+async function initCredential() {
 	const cred = new Credentials();
 	await cred.init();
 	return cred;
-})();
+}
+
+export const credentials = await initCredential();
+
+class Settings {
+	setting = $state({ countdown: true, autoCloseAfterSave: false });
+
+	// 初始化完成后，自动跟踪 setting 变化并保存到 local
+	constructor() {
+		$effect.root(() => {
+			$effect(() => {
+				const { countdown, autoCloseAfterSave } = this.setting;
+				void this.update({ countdown, autoCloseAfterSave });
+			})
+		});
+
+	}
+
+	private getLocalKey(key: string) {
+		return `setting:${key}`;
+	}
+
+	async init() {
+		const keys = Object.keys(this.setting) as Array<keyof typeof this.setting>;
+
+		const localKeys = keys.map((key) => this.getLocalKey(key));
+
+		const result = await chrome.storage.local.get(localKeys);
+		for (const key of keys) {
+			const localKey = this.getLocalKey(key);
+			if (result[localKey] !== undefined) {
+				// @ts-expect-error -
+				this.setting[key] = result[localKey];
+			}
+		}
+
+
+	}
+
+	private async update(newSettings: Partial<typeof this.setting>) {
+		// 持久化到 storage
+		const localSettings: Record<string, any> = {};
+		for (const [k, v] of Object.entries(newSettings)) {
+			const key = k as keyof typeof this.setting;
+			const localKey = this.getLocalKey(key);
+			localSettings[localKey] = v;
+		}
+		await chrome.storage.local.set(localSettings);
+	}
+}
+
+async function initSettings() {
+	const settings = new Settings();
+	await settings.init();
+	return settings;
+}
+
+export const settings = await initSettings();

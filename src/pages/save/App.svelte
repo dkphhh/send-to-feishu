@@ -7,6 +7,7 @@
 	import { stringifyDate } from '@/lib/utils';
 	import { onMount } from 'svelte';
 	import { DownLoadMarkdownManager } from '@/lib/down-load-markdown';
+	import { settings } from '@/components/settings/settingState.svelte';
 
 	const searchParams = new URL(window.location.toString()).searchParams;
 	const formId = searchParams.get('formId') as string;
@@ -205,6 +206,22 @@
 								type: 'success',
 								url: await sendToFeishu(formId, currentTabContent)
 							};
+
+							// 自动关闭侧边栏
+							if (settings.setting.autoCloseAfterSave) {
+								sendingModal.close();
+								setTimeout(() => {
+									window.close();
+								}, 500);
+								return;
+							}
+
+							// 不显示倒计时，直接返回主页
+							if (!settings.setting.countdown) {
+								sendingModal.close();
+								gotoPage('index');
+								return;
+							}
 
 							setTimeout(() => {
 								sendingModal.close();

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import NavItem from './NavItem.svelte';
-	import { credentials } from '@/components/settings/settings.svelte';
+	import { credentials } from '@/components/settings/settingState.svelte.js';
 </script>
 
 <nav class="navbar fixed top-0 z-50 flex-row justify-between glass shadow">

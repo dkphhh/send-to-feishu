@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Layout from '@/components/layout/Layout.svelte';
 	import { allForms } from '@/components/forms/forms.svelte';
-	import { credentials } from '@/components/settings/settings.svelte';
+	import { credentials } from '@/components/settings/settingState.svelte.js';
 	import { getPagePath } from '@/lib/utils';
 	import OnInstallGuide from '@/components/settings/OnInstallGuide.svelte';
 	import CreateFormButton from '@/components/forms/CreateFormButton.svelte';

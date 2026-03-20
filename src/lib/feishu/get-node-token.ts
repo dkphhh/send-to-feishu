@@ -1,4 +1,4 @@
-import { credentials } from '@/components/settings/settings.svelte';
+import { credentials } from '@/components/settings/settingState.svelte.js';
 
 type NodeType = 'bitable' | 'sheet' | 'docx';
 type PathName = 'wiki' | 'docx' | 'base' | 'sheets';

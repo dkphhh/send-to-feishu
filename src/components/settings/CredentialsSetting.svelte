@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { credentials } from './settings.svelte.js';
+	import { credentials } from './settingState.svelte.js';
 	import { notificationManager } from '../notification/notificationManager.svelte.js';
 	let feishuAppId = $derived(credentials.feishuAppId);
 	let feishuAppSecret = $derived(credentials.feishuAppSecret);
