@@ -7,6 +7,7 @@
 	import { stringifyDate } from '@/lib/utils';
 	import { onMount } from 'svelte';
 	import { DownLoadMarkdownManager } from '@/lib/down-load-markdown';
+	import { credentials } from '@/components/settings/settings.svelte';
 
 	const searchParams = new URL(window.location.toString()).searchParams;
 	const formId = searchParams.get('formId') as string;
@@ -188,6 +189,17 @@
 					/>
 				{/if}
 
+				{#if visibleFields === null || visibleFields.has('tag')}
+					<label for="articleTag" class="label">标签</label>
+					<input
+						id="articleTag"
+						type="text"
+						class="input w-full"
+						bind:value={currentTabContent.tag}
+						placeholder="文章标签"
+					/>
+				{/if}
+
 				{#if form.formType === '下载为 Markdown'}
 					<label for="fileName" class="label">文件名预览</label>
 					<p class="w-full text-sm">{fileNamePreview}</p>
@@ -206,18 +218,25 @@
 								url: await sendToFeishu(formId, currentTabContent)
 							};
 
-							setTimeout(() => {
-								sendingModal.close();
-								gotoPage('index');
-							}, 3000);
-							//关闭对话框的 倒计时数字
-							timeToCloseDialog = 3;
-							const interval = setInterval(() => {
-								timeToCloseDialog -= 1;
-								if (timeToCloseDialog <= 0) {
-									clearInterval(interval);
-								}
-							}, 1000);
+							if (credentials.autoCloseAfterSave) {
+								setTimeout(() => {
+									window.close();
+								}, 1500);
+								timeToCloseDialog = 1;
+							} else {
+								setTimeout(() => {
+									sendingModal.close();
+									gotoPage('index');
+								}, 3000);
+								//关闭对话框的 倒计时数字
+								timeToCloseDialog = 3;
+								const interval = setInterval(() => {
+									timeToCloseDialog -= 1;
+									if (timeToCloseDialog <= 0) {
+										clearInterval(interval);
+									}
+								}, 1000);
+							}
 						} catch (e) {
 							result = {
 								type: 'error',
