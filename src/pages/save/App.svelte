@@ -3,7 +3,7 @@
 	import { sendToFeishu } from '@/lib/sender';
 	import { getCurrentTabContent, gotoPage } from '@/lib/utils';
 	import { allForms } from '@/components/forms/forms.svelte';
-	import { extractWebArticle } from '@/lib/extract';
+	import { extractWebArticle, extractBasicInfo } from '@/lib/extract';
 	import { stringifyDate } from '@/lib/utils';
 	import { onMount } from 'svelte';
 	import { DownLoadMarkdownManager } from '@/lib/down-load-markdown';
@@ -37,7 +37,17 @@
 	onMount(async () => {
 		try {
 			const { html, url } = await getCurrentTabContent();
-			currentTabContent = await extractWebArticle(html, url);
+			try {
+				currentTabContent = await extractWebArticle(html, url);
+			} catch (extractError) {
+				// 对于不需要文章正文内容的表单类型（多维表格、电子表格），
+				// 当完整抓取失败时降级为仅提取标题和链接
+				if (form.formType === '多维表格' || form.formType === '电子表格') {
+					currentTabContent = extractBasicInfo(html, url);
+				} else {
+					throw extractError;
+				}
+			}
 		} catch (e) {
 			isLoadingArticleError = true;
 			loadingArticleError = e;
