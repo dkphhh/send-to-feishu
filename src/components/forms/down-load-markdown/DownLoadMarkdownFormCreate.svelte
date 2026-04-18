@@ -7,7 +7,7 @@
 	let form: DownLoadMarkdownFormType = $state({
 		id: crypto.randomUUID(),
 		icon: '📄',
-		formType: '下载为 Markdown',
+		formType: '保存到本地',
 		name: '',
 		fields: ['title', 'author', 'published', 'url'],
 		customFileNameString: '',

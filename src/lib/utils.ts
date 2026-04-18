@@ -80,7 +80,7 @@ export async function getCurrentTabContent(): Promise<{ html: string; url: strin
  * @param {(Date | string | number)} dateInput
  * @returns {string}
  */
-export function stringifyDate(dateInput: Date | string | number): string {
+export function stringifyDate(dateInput: Date | string | number, hasTime: boolean = true): string {
 	if (!dateInput) return '';
 
 	const date = dateInput instanceof Date ? dateInput : new Date(dateInput);
@@ -92,9 +92,9 @@ export function stringifyDate(dateInput: Date | string | number): string {
 		year: 'numeric',
 		month: '2-digit',
 		day: '2-digit',
-		hour: '2-digit',
-		minute: '2-digit',
-		second: '2-digit',
+		hour: hasTime ? '2-digit' : undefined,
+		minute: hasTime ? '2-digit' : undefined,
+		second: hasTime ? '2-digit' : undefined,
 		hour12: false,
 		timeZone: 'Asia/Shanghai' // Beijing time zone
 	})

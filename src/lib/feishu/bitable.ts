@@ -245,5 +245,5 @@ export class FeishuBitableManager {
 		}
 	}
 
-	// TODO: 读取多维表格字段，增加可视化的索引范围选择
+	
 }

@@ -25,7 +25,7 @@
 		<BitableFormSetting {form} />
 	{:else if form.formType === '飞书文档'}
 		<DocFormSetting {form} />
-	{:else if form.formType === '下载为 Markdown'}
+	{:else if form.formType === '保存到本地'}
 		<DownLoadMarkdownFormSetting {form} />
 	{/if}
 </Layout>

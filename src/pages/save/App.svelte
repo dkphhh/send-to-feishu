@@ -25,7 +25,7 @@
 	let currentTabContent: FetchedArticle | undefined = $state(undefined);
 
 	let fileNamePreview: string = $derived.by(() => {
-		if (form.formType !== '下载为 Markdown') return '';
+		if (form.formType !== '保存到本地') return '';
 		const m = new DownLoadMarkdownManager(
 			form.fields,
 			form.fileNameTemplate,
@@ -52,7 +52,7 @@
 		} else if (form.formType === '多维表格') {
 			const map = (form as BitableFormType).fieldsMap;
 			return new Set(Object.keys(map).filter((k) => map[k as keyof typeof map]));
-		} else if (form.formType === '下载为 Markdown') {
+		} else if (form.formType === '保存到本地') {
 			return new Set((form as DownLoadMarkdownFormType).fields);
 		}
 		return null;
@@ -189,7 +189,7 @@
 					/>
 				{/if}
 
-				{#if form.formType === '下载为 Markdown'}
+				{#if form.formType === '保存到本地'}
 					<label for="fileName" class="label">文件名预览</label>
 					<p class="w-full text-sm">{fileNamePreview}</p>
 				{/if}

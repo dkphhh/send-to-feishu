@@ -1,9 +1,50 @@
 // API 参考文档 https://open.feishu.cn/document/server-docs/docs/sheets-v3/data-operation/append-data
 import { stringifyDate } from '../utils';
 import { FeishuToken } from './feishu-token-manager';
-export type SheetPayload = Array<Array<string | { text: string; link: string; type: 'url' }>>;
 import { credentials } from '@/components/settings/settingState.svelte.js';
 import { getNodeToken } from './get-node-token';
+
+
+export type SheetPayload = Array<Array<string | { text: string; link: string; type: 'url' }>>;
+
+
+/**
+ * 将列索引字符串转为对应的整数（A=1, B=2, ..., Z=26, AA=27, ...）
+ */
+function colToNum(col: string): number {
+	let result = 0;
+	for (const ch of col.toUpperCase()) {
+		result = result * 26 + (ch.charCodeAt(0) - "A".charCodeAt(0) + 1);
+	}
+	return result;
+}
+/**
+ * 将整数转为对应的列索引字符串（1=A, 2=B, ..., 26=Z, 27=AA, ...）
+ */
+function numToCol(num: number): string {
+	let result = "";
+	while (num > 0) {
+		const remainder = (num - 1) % 26;
+		result = String.fromCharCode("A".charCodeAt(0) + remainder) + result;
+		num = Math.floor((num - 1) / 26);
+	}
+	return result;
+}
+/**
+ * 根据起始列索引和移动距离，输出目标列索引
+ * @param startIndex 起始列索引，如 "A"、"Z"、"AA"
+ * @param delta 移动距离，正数向右，负数向左
+ * @returns 目标列索引字符串
+ */
+export function getColIndex(startIndex: string, delta: number): string {
+	const targetNum = colToNum(startIndex) + delta;
+	if (targetNum < 1) {
+		throw new RangeError(
+			`结果列索引超出范围：startIndex="${startIndex}", delta=${delta} 导致列号为 ${targetNum}`
+		);
+	}
+	return numToCol(targetNum);
+}
 
 export class FeishuSheetManager {
 	constructor(
@@ -23,25 +64,27 @@ export class FeishuSheetManager {
 		 * 电子表格工作表的范围索引。
 		 */
 		private rangeIndex: SheetRangeIndex
-	) {}
+	) { }
 
 	/**
 	 *  获取电子表格的特定行的数据，默认读取第一行
+	 *  参考：https://open.feishu.cn/document/server-docs/docs/sheets-v3/data-operation/reading-a-single-range
 	 * @param rowIndex
 	 * @returns
 	 */
-	static async getSheetRowData(
-		sheetToken: string,
-		sheetId: string,
-		rowIndex: number = 1
+	async getSheetRowData(
+		rowIndex: number = 1,
+		colIndex?: string,
+		valueRenderOption?: "ToString" | "Formula" | "FormattedValue" | "UnformattedValue",
+		dateTimeRenderOption?: "FormattedString"
 	): Promise<Array<string | number>> {
-		const range = `${sheetId}!${rowIndex}:${rowIndex}`;
+		const range = `${this.sheetId}!${colIndex}${rowIndex}:${colIndex}${rowIndex}`;
 
 		if (!credentials.tokenManager) {
 			throw new Error('未找到有效的凭据');
 		}
 
-		const url = `https://open.feishu.cn/open-apis/sheets/v2/spreadsheets/${sheetToken}/values/${range}`;
+		const url = `https://open.feishu.cn/open-apis/sheets/v2/spreadsheets/${this.sheetToken}/values/${range}?valueRenderOption=${valueRenderOption}&dateTimeRenderOption=${dateTimeRenderOption}`;
 
 		const headers = {
 			Authorization: `Bearer ${await credentials.tokenManager.getToken()}`,
@@ -146,12 +189,50 @@ export class FeishuSheetManager {
 		return token;
 	}
 
+	async getSpreadsheetsData(): Promise<GetSpreadsheetsDataResponse> {
+		const url = `https://open.feishu.cn/open-apis/sheets/v3/spreadsheets/${this.sheetToken}/sheets/query`;
+
+		const headers = {
+			Authorization: `Bearer ${await this.tokenManager.getToken()}`,
+			'Content-Type': 'application/json; charset=utf-8'
+		};
+
+		const res = await fetch(url, {
+			method: 'GET',
+			headers
+		});
+
+		if (!res.ok) {
+			const resData: FeishuApiResponse = await res.json();
+
+			if (resData.code) {
+				throw new Error(
+					`飞书电子表格接口报错。请参考以下方式解决：https://open.feishu.cn/search?q=${resData.code}`
+				);
+			}
+
+			throw new Error(`请求电子表格接口失败，${await res.text()}`);
+		}
+
+		const resData: GetSpreadsheetsDataResponse = await res.json();
+
+		if (resData.code !== 0) {
+			throw new Error(
+				`飞书电子表格接口报错：${resData.msg},请参考以下方式解决：https://open.feishu.cn/search?q=${resData.code}`
+			);
+		}
+
+		return resData;
+	}
+
+
 	static getPayload(
 		fields: Array<FetchedArticleField | 'feishuDocUrl'>,
 		articleData: FetchedArticle,
 		feishuDocUrl?: string
 	): SheetPayload {
 		const payload: SheetPayload = [[]];
+
 		for (const field of fields) {
 			switch (field) {
 				case 'author':
@@ -166,7 +247,7 @@ export class FeishuSheetManager {
 						// Check for invalid date
 						payload[0].push('');
 					} else {
-						payload[0].push(stringifyDate(date)); // Replace slashes with hyphens
+						payload[0].push(stringifyDate(date));
 					}
 					break;
 				}

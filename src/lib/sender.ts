@@ -8,7 +8,6 @@ import { FeishuSheetManager, type SheetPayload } from '@/lib/feishu/sheet';
 
 async function sendToFeishuSheet(formId: string, payload: SheetPayload) {
 	if (!credentials.tokenManager) {
-		// TODO:能否自定义错误类型？通过特定的错误类型，让用户自动跳转到授权页面
 		throw new Error('未找到有效的凭据');
 	}
 	const form = getForm(formId);
@@ -35,7 +34,6 @@ async function sendToFeishuSheet(formId: string, payload: SheetPayload) {
 
 async function sendToFeishuBitable(formId: string, payload: BitablePayload) {
 	if (!credentials.tokenManager) {
-		// TODO:能否自定义错误类型？通过特定的错误类型，让用户自动跳转到授权页面
 		throw new Error('未找到有效的凭据');
 	}
 	const form = getForm(formId);
@@ -74,7 +72,6 @@ async function sendToFeishuDoc(
 	metaData?: Omit<FetchedArticle, 'content'>
 ): Promise<string> {
 	if (!credentials.tokenManager) {
-		// TODO:能否自定义错误类型？通过特定的错误类型，让用户自动跳转到授权页面
 		throw new Error('未找到有效的凭据');
 	}
 
@@ -103,7 +100,7 @@ async function saveMarkdownFile(formId: string, article: FetchedArticle) {
 	if (!form) {
 		throw new Error('表单配置未找到');
 	}
-	if (form.formType !== '下载为 Markdown') {
+	if (form.formType !== '保存到本地') {
 		throw new Error('表单配置类型错误');
 	}
 
@@ -219,7 +216,7 @@ export async function sendToFeishu(
 			return await sendToFeishuDoc(formId, payload as DocPayload, rest);
 		}
 
-		case '下载为 Markdown': {
+		case '保存到本地': {
 			await saveMarkdownFile(formId, articleData);
 			break;
 		}

@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { crx } from '@crxjs/vite-plugin';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
+import pkg from './package.json'
 
 import tailwindcss from '@tailwindcss/vite';
 
@@ -46,5 +47,5 @@ export default defineConfig(({ command }) => ({
 				save: 'src/pages/save/index.html'
 			}
 		}
-	}
+	},
 }));

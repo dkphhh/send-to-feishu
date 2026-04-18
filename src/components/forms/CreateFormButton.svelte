@@ -20,6 +20,6 @@
 		{@render createNewForm('电子表格')}
 		{@render createNewForm('多维表格')}
 		{@render createNewForm('飞书文档')}
-		{@render createNewForm('下载为 Markdown')}
+		{@render createNewForm('保存到本地')}
 	</ul>
 </div>

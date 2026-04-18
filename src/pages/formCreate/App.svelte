@@ -15,7 +15,7 @@
 		<BitableFormCreate />
 	{:else if formTypeName == '飞书文档'}
 		<DocFormCreate />
-	{:else if formTypeName == '下载为 Markdown'}
+	{:else if formTypeName == '保存到本地'}
 		<DownLoadMarkdownFormCreate />
 	{/if}
 </Layout>

@@ -74,6 +74,34 @@ declare global {
 
 	type SheetRangeIndex = { startIndex: string; endIndex: string };
 
+	interface SheetGridProperties {
+		frozen_row_count: number;
+		frozen_column_count: number;
+		row_count: number;
+		column_count: number;
+	}
+
+	interface SheetMergeRange {
+		start_row_index: number;
+		end_row_index: number;
+		start_column_index: number;
+		end_column_index: number;
+	}
+
+	interface SheetItem {
+		sheet_id: string;
+		title: string;
+		index: number;
+		hidden: boolean;
+		grid_properties?: SheetGridProperties;
+		resource_type: 'sheet' | 'bitable' | '#UNSUPPORTED_TYPE';
+		merges?: SheetMergeRange[];
+	}
+
+	type GetSpreadsheetsDataResponse = FeishuApiResponse<{
+		sheets: SheetItem[];
+	}>;
+
 	interface BaseFormType {
 		/**
 		 *  配置 id
@@ -90,7 +118,7 @@ declare global {
 		/**
 		 * 表单类型名称
 		 */
-		formType: '电子表格' | '多维表格' | '飞书文档' | '下载为 Markdown';
+		formType: '电子表格' | '多维表格' | '飞书文档' | '保存到本地';
 	}
 	interface SheetFormTypeBase extends BaseFormType {
 		formType: '电子表格';
@@ -140,7 +168,7 @@ declare global {
 		/**
 		 * 表单类型名称
 		 */
-		formType: '下载为 Markdown';
+		formType: '保存到本地';
 
 		/**
 		 * 保存到文章开头的 YAML 字段
@@ -193,4 +221,4 @@ declare global {
 	type PageType = 'index' | 'settings' | 'formList' | 'formEdit' | 'formCreate' | 'save';
 }
 
-export {};
+export { };

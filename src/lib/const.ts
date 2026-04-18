@@ -2,7 +2,7 @@ export const FORM_ICONS: Record<FormTypeName, string> = {
 	多维表格: '🗂️',
 	电子表格: '📊',
 	飞书文档: '🗒️',
-	'下载为 Markdown': '📄'
+	'保存到本地': '📄'
 };
 
 export const ARTICLE_FIELDS: Record<FetchedArticleField | 'feishuDocUrl', string> = {
