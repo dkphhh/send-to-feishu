@@ -1,20 +1,24 @@
-// import { getPagePath } from '@/lib/utils';
-
-// 点击扩展图标时，打开侧边栏
-chrome.sidePanel
-	.setPanelBehavior({ openPanelOnActionClick: true })
-	.catch((error) => console.error(error));
+chrome.action.onClicked.addListener(async (tab) => {
+	if (!tab.id) return;
+	try {
+		await chrome.tabs.sendMessage(tab.id, { type: 'TOGGLE_PANEL' });
+	} catch {
+		// content script not loaded, inject it
+		try {
+			await chrome.scripting.executeScript({
+				target: { tabId: tab.id },
+				files: ['src/content/main.ts']
+			});
+			setTimeout(() => {
+				chrome.tabs.sendMessage(tab.id!, { type: 'TOGGLE_PANEL' });
+			}, 50);
+		} catch (e) {
+			console.error('Failed to inject content script:', e);
+		}
+	}
+});
 
 const isDev = import.meta.env.DEV;
 chrome.action.setBadgeText({
 	text: isDev ? 'DEV' : ''
 });
-
-// chrome.runtime.onInstalled.addListener((details) => {
-// 	if (details.reason === 'install') {
-// 		// 第一次下载时，打开设置页面
-// 		chrome.tabs.create({
-// 			url: chrome.runtime.getURL(getPagePath('settings'))
-// 		});
-// 	}
-// });

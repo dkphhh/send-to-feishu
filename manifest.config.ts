@@ -25,8 +25,18 @@ export default defineManifest({
 		service_worker: 'src/background/main.ts',
 		type: 'module'
 	},
-	permissions: ['sidePanel', 'storage', 'tabs', 'scripting'],
-	side_panel: {
-		default_path: 'src/pages/index/index.html'
-	}
+	permissions: ['storage', 'tabs', 'scripting'],
+	content_scripts: [
+		{
+			matches: ['http://*/*', 'https://*/*'],
+			js: ['src/content/main.ts'],
+			run_at: 'document_idle'
+		}
+	],
+	web_accessible_resources: [
+		{
+			resources: ['src/pages/**/*.html', 'assets/**'],
+			matches: ['<all_urls>']
+		}
+	]
 });

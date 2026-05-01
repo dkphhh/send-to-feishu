@@ -8,7 +8,6 @@
 	import { onMount } from 'svelte';
 	import { DownLoadMarkdownManager } from '@/lib/down-load-markdown';
 	import { settings } from '@/components/settings/settingState.svelte';
-
 	const searchParams = new URL(window.location.toString()).searchParams;
 	const formId = searchParams.get('formId') as string;
 
@@ -211,7 +210,7 @@
 							if (settings.setting.autoCloseAfterSave) {
 								sendingModal.close();
 								setTimeout(() => {
-									window.close();
+									window.parent.postMessage({ type: 'CLOSE_PANEL' }, '*');
 								}, 500);
 								return;
 							}
