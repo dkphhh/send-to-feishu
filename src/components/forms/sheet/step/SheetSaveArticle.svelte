@@ -9,7 +9,7 @@
 
 <select
 	id="linkDocForm "
-	class="select w-full"
+	class="select w-md"
 	onchange={() => {
 		form.linkDocFormId = selectedDocFormId;
 	}}
