@@ -56,7 +56,8 @@
 			如有疑问，请<a
 				target="_blank"
 				class="link link-neutral"
-				href="https://dkphhh.me/tools/send-to-feishu/">查看教程</a
+				href="https://dkphhh.me/2025-12-01_18-40-48_chrome_%E6%B5%8F%E8%A7%88%E5%99%A8%E6%8F%92%E4%BB%B6_%E4%BF%9D%E5%AD%98%E5%88%B0%E9%A3%9E%E4%B9%A6"
+				>查看教程</a
 			>
 		</p>
 

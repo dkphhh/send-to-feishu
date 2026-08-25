@@ -21,7 +21,7 @@
 [保存到飞书 - Chrome 网上应用店](https://chromewebstore.google.com/detail/okikdnfndhpkofekldmcgdneaajlahnb?utm_source=item-share-cb)
 
 使用前，请先查看文档：
-[Chrome 浏览器插件「保存到飞书」使用说明](https://dkphhh.me/tools/send-to-feishu)
+[Chrome 浏览器插件「保存到飞书」使用说明](https://dkphhh.me/2025-12-01_18-40-48_chrome_%E6%B5%8F%E8%A7%88%E5%99%A8%E6%8F%92%E4%BB%B6_%E4%BF%9D%E5%AD%98%E5%88%B0%E9%A3%9E%E4%B9%A6)
 
 如果你觉得这款插件对你有帮助，欢迎给它一个⭐️，并分享给你的朋友们！
 
